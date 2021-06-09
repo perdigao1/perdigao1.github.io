@@ -1,0 +1,1767 @@
+<!DOCTYPE HTML>
+<html>
+<head>
+	<meta charset="utf-8">
+	<link rel="stylesheet" href="styles.css">
+	<title>LP Ion Simulator v5</title>
+
+</head>
+<body>
+	<h1>Ion Simulator</h1>
+
+	<table>
+		<tr>
+			<td width="300px"> <!--Left side-->
+				<div class="tab">
+					<button class="tablinks" onclick="openTab(event, 'Setup')">Setup</button>
+				</div>
+				<div id="Setup" class="tabcontent">
+					Presets
+					<select id="selectPresetSetup" onchange="selectPresetSetup_onchange(event)">
+						<option selected="selected" value="clear">Clear</option>
+						<option value="twoElectrodes">Two electrodes</option>
+						<option value="quadBender">Quad bender</option>
+						<option value="einzelLens">Einzel lens</option>
+						<option value="tipSurface">Tip-surface</option>
+					</select>
+					<button onclick = "btnSetupSelPresetApply(event)">Apply</button>
+					<br>
+					<table>
+						<tr>
+							<td><button onclick="btnLoadProject_onclick()">Load</button></td>
+							<td><button onclick="btnSaveProject_onclick()">Save</button></td>
+						</tr>
+					</table>
+				</div>
+				<br>
+				<div class="tab">
+					<button class="tablinks" onclick="openTab(event, 'NewEPArray')">New Electric Potential Array</button>
+				</div>
+				<div id="NewEPArray" class="tabcontent">
+					<table>
+						<tr>
+							<td>
+								<label for="xpoints">xpoints:</label><input type="number" id="numResolutionXPoints" name="xpoints" min="10" max="512" value=40>
+							</td>
+							<td>
+								<label for="dx">dx:</label><input type="number" id="numResolutionDx" name="dx" value=1>
+							</td>
+						</tr>
+						<tr>
+							<td>
+								<label for="ypoints">ypoints:</label><input type="number" id="numResolutionYPoints" name="ypoints" min="10" max="512" value=40>
+							</td>
+							<td>
+								<label for="dy">dy:</label><input type="number" id="numResolutionDy" name="dy" value=1>
+							</td>
+						</tr>
+						<tr>
+							<td>
+								<label for="zpoints">zpoints:</label><input type="number" id="numResolutionZPoints" name="zpoints" min="10" max="512" value=40>	
+							</td>
+							<td>
+								<label for="dz">dz:</label><input type="number" id="numResolutionDz" name="dz" value=1>
+							</td>
+						</tr>
+					</table>
+					<br>
+					<button name="btnSetupApply" onclick="btnSetupApply(event)">Apply</button>
+				</div>
+				<br>
+				<div class="tab">
+					<button class="tablinks" onclick="openTab(event, 'AddRemoveElectrodes')">Add/Remove electrodes</button>
+				</div>
+				<div id="AddRemoveElectrodes" class="tabcontent">
+					<input type="radio" id="radioElectBox" value="box" name="newElectrodeType" checked onchange="newElectrodeParamChangedDoPreview()"><label for="radioElectBox">Box</label>
+					<div class="addElBoxInputRegion" id="addElBoxInputRegion">
+						<table>
+							<tr>
+								<td>
+									<label for="numElBoxX0">x0:</label><input id="numElBoxX0" type="number" min="0" value=0 onchange="newElectrodeParamChangedDoPreview()">
+								</td>
+								<td>
+									<label for="numElBoxX1">x1:</label><input id="numElBoxX1" type="number" min="0" value=0 onchange="newElectrodeParamChangedDoPreview()"">
+								</td>
+							</tr>
+							<tr>
+								<td>
+									<label for="numElBoxY0">y0:</label><input id="numElBoxY0" type="number" min="0" value=0 onchange="newElectrodeParamChangedDoPreview()"">
+								</td>
+								<td>
+									<label for="numElBoxY1">y1:</label><input id="numElBoxY1" type="number" min="0" value=0 onchange="newElectrodeParamChangedDoPreview()">
+								</td>
+							</tr>
+							<tr>
+								<td>
+									<label for="numElBoxZ0">z0:</label><input id="numElBoxZ0" type="number" min="0" value=0 onchange="newElectrodeParamChangedDoPreview()">
+								</td>
+								<td>
+									<label for="numElBoxZ1">z1:</label><input id="numElBoxZ1" type="number" min="0" value=0 onchange="newElectrodeParamChangedDoPreview()">
+								</td>
+							</tr>
+						</table>
+					</div>
+					<br>
+					<input type="radio" id="radioElectCyl" value="cyl" name="newElectrodeType" onchange="newElectrodeParamChangedDoPreview()"><label for="radioElectCyl">Cylinder</label>
+					<br>
+					<div class="addElecCylInputRegion" id="addElecCylInputRegion" style="display:none;">
+						<label for="numElCylX">x: </label><input id="numElCylX" type="number" min="0" value=0 onchange="newElectrodeParamChangedDoPreview()">
+						<label for="numElCylY">y: </label><input id="numElCylY" type="number" min="0" value=0 onchange="newElectrodeParamChangedDoPreview()">
+						<label for="numElCylZ">z: </label><input id="numElCylZ" type="number" min="0" value=0 onchange="newElectrodeParamChangedDoPreview()">
+						<br>
+						<label for="numElCylRadius">r:</label><input id="numElCylRadius" type="number" min="0" value=1 onchange="newElectrodeParamChangedDoPreview()">
+						<label for="numElCylHeight">h:</label><input id="numElCylHeight" type="number" min="0" value=1 onchange="newElectrodeParamChangedDoPreview()">
+						<br>Direction:
+						<input type="radio" id="radioElCylDirX" value="x" name="radioElCylDir" checked onchange="newElectrodeParamChangedDoPreview()"> <label for="radioElCylDirX">X</label>,
+						<input type="radio" id="radioElCylDirY" value="y" name="radioElCylDir" onchange="newElectrodeParamChangedDoPreview()"> <label for="radioElCylDirY">Y</label>,
+						<input type="radio" id="radioElCylDirZ" value="z" name="radioElCylDir" onchange="newElectrodeParamChangedDoPreview()"> <label for="radioElCylDirZ">Z</label>
+					</div>
+					<br>
+					<input type="checkbox" id="chkbxNewElPreview" name="chkbxNewElPreview" onchange="newElectrodeParamChangedDoPreview()"> <label for="chkbxNewElPreview">Preview</label>
+					<br>
+					<label for="numElPot">Potential: </label><input id="numElPot" type="number" min="0" value=0>
+					<br><br>
+					<button id="btnAddElectrode" onclick="btnAddRemoveElectrode(true)">Add</button>
+					<button onclick="btnAddRemoveElectrode(false)">Remove</button>
+				</div>
+				<br>
+				<div class="tab">
+					<button class="tablinks" onclick="openTab(event, 'Convergence')">Convergence</button>
+				</div>
+				<div id="Convergence" class="tabcontent">
+						<br>Max value
+						<select id="selConvergenceMaxValueInput" onchange="selConvergenceMaxValueInput_onchange(event)">
+							<option selected="selected" value="1e-3">1e-3</option>
+							<option value="1e-4">1e-4</option>
+							<option value="1e-5">1e-5</option>
+						</select>
+						<br>
+						<button onclick="btn_Converge_click(event)">Converge</button>
+						<br>Number of iterations = <span id="txt_niter"></span>
+						<br>Max change = <span id="txt_maxchange"></span>
+						<br>Convergence status: <span id="txtConvergenceStatus"></span>
+				</div>
+				<br>
+				<div class="tab">
+					<button class="tablinks" onclick="openTab(event, 'ElPotProbe')">Electric potential probe</button>
+				</div>
+				<div id="ElPotProbe" class="tabcontent">
+					<br><input type="checkbox" id="chkbxPlaneVisible" onclick="chkbxPlaneVisible_onclick()" checked ><label for="chkbxPlaneVisible">Visible</label> 
+					<br>
+					<label for="slider_planeloc">PA Probe Plane:</label>
+					<input type="range" id="slider_planeloc" value ="20" min="0" max="39" oninput="slider_planeloc_oninput()"  style="width: 70px;"> <span id="slider_planeloc_axis"></span>
+						:
+						<span id="slider_planeloc_value"></span>
+					<br>Plane orientation:<br>
+					<input type="radio" id="radioPlaneXY" value="planeXY" name="radioPlane" onclick="radioPlane_onclick()" checked> <label for="radioPlaneXY">XY</label>,
+					<input type="radio" id="radioPlaneXZ" value="planeXZ" name="radioPlane" onclick="radioPlane_onclick()"> <label for="radioPlaneXZ">XZ</label>,
+					<input type="radio" id="radioPlaneYZ" value="planeYZ" name="radioPlane" onclick="radioPlane_onclick()"> <label for="radioPlaneYZ">YZ</label>
+					<br>
+					<canvas id="canvasPASurfacePlot" width="150px" height="150px" style="border: solid 1px black;"></canvas>
+				</div>
+			</td>
+
+
+			<td> <!--middle-->
+				<div class="canvasPAViewRegion">
+					<canvas id="canvasPAViewthreejs" width="700px" height="500px">Canvas not supported</canvas>
+				</div>
+			</td>
+			
+
+			<td width ="300px"> <!-- right side -->
+
+				<div class="tab">
+					<button class="tablinks" onclick="openTab(event, 'ParticleSources')">Particle Sources</button>
+				</div>
+				<div id="ParticleSources" class="tabcontent">
+					
+					<!--List of sources as a table-->
+					<div class="divTblParticleSources">
+						<b>Sources</b>
+						<br>
+						<table id="tblParticleSources"></table>
+					</div>
+					<br>
+					<div>
+						<b>New source</b>
+						<table>
+							<tr>
+								<td>
+									<label for="srcx">X:</label><input type="number" id="numNewSrcXPos" name="srcx" min="0" max="40" value="20">
+								</td>
+								<td>
+									<label for="srcvx">Vx:</label><input type="number" id="numNewSrcXVel" name="srcvx" value="0">
+								</td>
+							</tr>
+							<tr>
+								<td>
+									<label for="srcy">Y:</label><input type="number" id="numNewSrcYPos" name="srcy" min="0" max="40" value="20">
+								</td>
+								<td>
+									<label for="srcvy">Vy:</label><input type="number" id="numNewSrcYVel" name="srcvy" value="0">
+								</td>
+							</tr>
+							<tr>
+								<td>
+									<label for="srcz">Z:</label><input type="number" id="numNewSrcZPos" name="srcz" min="0" max="40" value="20">
+								</td>
+								<td>
+									<label for="srcvz">Vz:</label><input type="number" id="numNewSrcZVel" name="srcvz" value="0">
+								</td>
+							</tr>
+						</table>
+
+						<table>
+							<tr>
+								<td>
+									<label for="srcmass">Mass:</label><input type="number" id="numNewSrcMass" name="srcmass" value="1">
+								</td>
+								<td>
+									<label for="srccharge">Charge:</label><input type="number" id="numNewSrcCharge" name="srccharge" value="1">
+								</td>
+							</tr>
+						</table>
+						<br>
+						<button name="btnCreatePartSource" onclick="btnCreatePartSource(event)">Create</button>
+					</div>
+				</div>
+				<br>
+				<div class="tab">
+					<button class="tablinks" onclick="openTab(event, 'Simulation')">Simulation</button>
+				</div>
+				<div id="Simulation" class="tabcontent">
+					<label for="deltat">delta t:</label><input type="number" id="deltat" name="deltat" value="1e-4" min="1e-6" step="1e-6" style="min-width : 70px">
+					<br><button name="btnFlyParticles" onclick="btnFlyParticles(event)">FlyParticles</button>
+					<button name="btnStopFlyParticles" onclick="btnStopFlyParticles(event)">Stop</button>
+					<button name="btnResetParticles" onclick="resetParticles(event)">Reset</button>
+					<br><span id="txtFlyRunningStatus"></span>
+					<br>time elapsed = <span id="txtFlyTimeElapsed"></span>
+					<br>iteration  = <span id = "txtFlyIteration"></span>
+				</div>
+
+
+			</td>
+		</tr>
+	</table>
+
+
+
+
+
+	<!-- SCRIPTS HERE -->
+
+	<script src="three.js"></script>
+	<!-- <script src="OrbitControls.js"></script> -->
+	<script src="TrackballControls.js"></script>
+	<script src="IonSimulator.js"></script>
+
+
+<script>
+
+var EPSystem=null;
+var ConvergenceDoRegUpdates_continue = true;
+
+var ionsim = null;
+
+var canvasPAViewthreejs= document.getElementById("canvasPAViewthreejs");
+
+var threejsCamera, threejsScene , threejsRenderer;
+//var threejsRaycaster; //This is for supporting picking of objects
+
+var PAModelsGroup=null;
+var EPProbePlane= null;
+//var orbitcontrol;
+var trackballControl;
+var renderer;
+
+var threeElectrodePreview3DModelGroup=null;
+
+let particles3DGroup= null; //Will contain the particle models
+
+//let map_Part3D_CParticle=new Map();
+
+function btn_Converge_click(event){
+	
+	//Sets up convergence criteria
+	let convCritMaxValue = parseFloat(document.getElementById("selConvergenceMaxValueInput").value);
+
+	EPSystem.convergenceCriteria = convCritMaxValue;
+	
+	EPSystem.converge();
+
+	//Update regularly
+	convergeDoRegUpdates();
+
+	//Sets function to let know when converge completed
+	// this.addEventListener("convergeCompleted", function(e){
+	// 	document.getElementById("txtconvergeStatus").innerHTML="converge Completed";
+	// });
+	//It does not work
+}
+
+function convergeDoRegUpdates(){
+	//Reg update until flag to stop
+	updateEPConvStatusInfo();
+	updateEPProbePlane();
+
+	if (EPSystem.isConverging){
+		setTimeout( convergeDoRegUpdates , 500 ); //update every 500ms
+	}
+}
+
+function initTHREEIonSimViewer(){
+
+	//Similar to LMAPperJS v3
+
+	threejsScene = new THREE.Scene();
+	threejsScene.background = new THREE.Color(0xFFFFFF); //white
+
+	threejsCamera= new THREE.PerspectiveCamera( 45, canvasPAViewthreejs.clientWidth / canvasPAViewthreejs.clientHeight, 1, 1000 );  //(fov, aspect, near, far)
+	threejsCamera.position.z=100;
+	
+	//move camera to centre of PA
+	if (EPSystem != null){
+		threejsCamera.position.set(
+			EPSystem.pa_length_x* EPSystem.dx /2,
+			EPSystem.pa_length_y* EPSystem.dy /2,
+			100);
+	}
+
+	threejsScene.add(threejsCamera);
+
+	var light = new THREE.DirectionalLight(0xffffff, 0.8);
+	light.position.set(0.5, 0.7, 1);
+	threejsScene.add(light);
+
+	threejsRenderer = new THREE.WebGLRenderer({ canvas: canvasPAViewthreejs });
+
+	PAModelsGroup = new THREE.Group(); //Add the PA models here (box, spheres, cylinders)
+	threejsScene.add(PAModelsGroup);
+
+	// orbitcontrol = new THREE.OrbitControls( threejsCamera , canvasPAViewthreejs);
+	// orbitcontrol.target = new THREE.Vector3( EPSystem.pa_length_x* EPSystem.dx /2,
+	// 		EPSystem.pa_length_y* EPSystem.dy /2,
+	// 		EPSystem.pa_length_z* EPSystem.dz /2 ) ; //Set target (look at) to the centre of the PA
+	// orbitcontrol.update();
+
+	//Trackball
+	trackballControl = new THREE.TrackballControls( threejsCamera , canvasPAViewthreejs);
+	trackballControl.target = new THREE.Vector3( EPSystem.pa_length_x* EPSystem.dx /2,
+			EPSystem.pa_length_y* EPSystem.dy /2,
+			EPSystem.pa_length_z* EPSystem.dz /2 ) ; //Set target (look at) to the centre of the PA
+	trackballControl.staticMoving=true; //stops the damping when moving around
+	trackballControl.update();
+	
+	//trackballControl.addEventListener('change' , trackballControlChanged);
+	//TODO: Mouse events do not trigger 'update()'
+	//and so it does not dispatch a change event like orbitcontrols does
+
+
+	var axesHelper = new THREE.AxesHelper( 5 );
+	threejsScene.add( axesHelper );
+
+	particles3DGroup = new THREE.Group();
+	threejsScene.add(particles3DGroup);
+
+	threeElectrodePreview3DModelGroup = new THREE.Group();
+	threejsScene.add(threeElectrodePreview3DModelGroup);
+
+	animate();
+	//render();
+
+}
+
+
+//TODO: Remove this and only update when change occurs
+function animate(){
+	requestAnimationFrame( animate );
+
+	trackballControl.update(); //need to update trackball, because the way it was designed
+
+	render();
+
+}
+
+function render(){
+	//update particles visuals here before rendering
+	updateParticles3DVisualsFromIonSim();
+
+	threejsRenderer.render( threejsScene, threejsCamera ); //render scene
+		//I may have to do it in a different way if using a orbit control
+}
+
+function updateEPConvStatusInfo(){
+	//Called at the end of a convergence calculation
+
+	//display results
+	document.getElementById("txt_niter").innerHTML= EPSystem.convergeNiterations.toString();
+	document.getElementById("txt_maxchange").innerHTML= EPSystem.convergeMaxChange.toExponential(1);
+
+	let s0="";
+	if (EPSystem.isConverging) {
+		s0 += "Is converging."
+	}
+	if (EPSystem.isConverged){
+		s0+= "Convergence reached.";
+	}
+	document.getElementById("txtConvergenceStatus").innerHTML=s0;
+
+	// if (!EPSystem.isRefining){
+	// 	updateEPElectrodesModelsGroup();
+	// 	updateEPProbePlane();
+	// }
+	
+}
+
+function updateEPElectrodesModelsGroup(){
+	if ( EPSystem != null ){
+		if (threejsScene == null ){
+			initTHREEIonSimViewer();
+		}
+
+		//Clears elements in PAModelsGroup
+		//PAModelsGroup.children=[]; //Deletes all elements
+		PAModelsGroup.clear();
+
+		//Defines a cube
+		let p0= new THREE.Vector3( -EPSystem.dx/2 ,  -EPSystem.dy/2 , -EPSystem.dz/2) ;
+		let p1= new THREE.Vector3( EPSystem.dx/2 ,  -EPSystem.dy/2 , -EPSystem.dz/2) ;
+		let p2= new THREE.Vector3( EPSystem.dx/2 ,  EPSystem.dy/2 , -EPSystem.dz/2) ;
+		let p3= new THREE.Vector3( -EPSystem.dx/2 ,  EPSystem.dy/2 , -EPSystem.dz/2) ;
+		let p4= new THREE.Vector3( -EPSystem.dx/2 ,  -EPSystem.dy/2 , EPSystem.dz/2) ;
+		let p5= new THREE.Vector3( EPSystem.dx/2 ,  -EPSystem.dy/2 , EPSystem.dz/2) ;
+		let p6= new THREE.Vector3( EPSystem.dx/2 ,  EPSystem.dy/2 , EPSystem.dz/2) ;
+		let p7= new THREE.Vector3( -EPSystem.dx/2 ,  EPSystem.dy/2 , EPSystem.dz/2) ;
+
+		//let boxgeom = new THREE.BoxBufferGeometry( EPSystem.dx , EPSystem.dy , EPSystem.dz ); //Creates a single box geometry that will be cloned
+		let boxgeom = new THREE.BufferGeometry().setFromPoints( [
+			p0,p1,
+			p1,p2,
+			p2,p3,
+			p3,p0,
+			p4,p5,
+			p5,p6,
+			p6,p7,
+			p7,p4,
+			p0,p4,
+			p1,p5,
+			p2,p6,
+			p3,p7
+		]);
+
+
+		for (let iz = 0 ; iz < EPSystem.pa_length_z ; iz++){
+			for (let iy = 0 ; iy < EPSystem.pa_length_y ; iy++){
+				for (let ix = 0 ; ix < EPSystem.pa_length_x ; ix++){
+					if (EPSystem.isElectrode[iz][iy][ix]){
+						let box0 = boxgeom.clone();
+						box0.translate(ix* EPSystem.dx , iy * EPSystem.dy , iz * EPSystem.dz);
+						
+						//Color based on electrode value
+						//In this implementation it draws here each electrode as a wireframe box
+						let color0= new THREE.Color(0x000000);
+						let v= EPSystem.potential[iz][iy][ix];
+						if (v>=0){
+							color0.r=0.7;
+							color0.g=0.0;
+							color0.b=0.0; //red
+						}else{
+							color0.r=0.0;
+							color0.g=0.0;
+							color0.b=0.7; //blue
+						}
+						// if (Math.abs(v)<=2){
+						// 	if (v >=0){
+						// 		color0.r = v/2; //red graded from 0 to 2
+						// 	}else{
+						// 		color0.b = Math.abs(v)/2; //blue graded from 0 to 2
+						// 	}
+						// }else if (Math.abs(v)<=10) {
+						// 	if (v >=0){
+						// 		color0.g = v/10; //red graded from 0 to 10
+						// 		color0.r = v/10;
+						// 	}else{
+						// 		color0.g = Math.abs(v)/10;
+						// 	}
+						// }else if(v!=0){
+						// 	//otherwise, purple
+						// 	color0.r=1;
+						// 	color0.g=0;
+						// 	color.b=1;
+						// }
+
+						// const electrodematerial = new THREE.MeshBasicMaterial({
+						// 	color: color0,
+						// 	wireframe: true,
+						// });
+
+						//const mesh = new THREE.Mesh(box0,electrodematerial);
+
+						const mesh = new THREE.LineSegments(box0, new THREE.LineBasicMaterial({	color: color0}) );
+
+						PAModelsGroup.add (mesh);
+					}
+				}
+			}
+		}
+
+		//threejsCamera.position.x = EPSystem.pa_length_x* EPSystem.dx /2;
+		//threejsCamera.position.y = EPSystem.pa_length_y* EPSystem.dy /2;
+
+		render();
+	}
+	
+}
+
+function updateEPElectrodesModelsGroupLineRedux1(){
+	//TODO: Instead of drawing a cube for each electrode point,
+	// reduce the number of lines by flagging each edge as true or false (draw or not draw)
+	//and with the color it should be drawn
+
+	if ( EPSystem != null ){
+		if (threejsScene == null ){
+			initTHREEIonSimViewer();
+		}
+
+		//Clears elements in PAModelsGroup
+		//PAModelsGroup.children=[]; //Deletes all elements
+		PAModelsGroup.clear();
+
+
+		let bhaslineX=new Array(EPSystem.pa_length_z+1);
+		let bhaslineY=new Array(EPSystem.pa_length_z+1);
+		let bhaslineZ=new Array(EPSystem.pa_length_z+1);
+
+
+		//initialise
+		for (let iz=0 ; iz<= EPSystem.pa_length_z; iz++){
+
+			bhaslineX[iz] = new Array(EPSystem.pa_length_y+1);
+			bhaslineY[iz] = new Array(EPSystem.pa_length_y+1);
+			bhaslineZ[iz] = new Array(EPSystem.pa_length_y+1);
+
+			for (let iy = 0 ; iy <= EPSystem.pa_length_y ; iy++){
+
+				bhaslineX[iz][iy] = new Array(EPSystem.pa_length_x+1);
+				bhaslineY[iz][iy] = new Array(EPSystem.pa_length_x+1);
+				bhaslineZ[iz][iy] = new Array(EPSystem.pa_length_x+1);
+
+				for (let ix=0 ; ix <= EPSystem.pa_length_x ; ix++){
+					//Work out if this section should have line or not
+					bhaslineX[iz][iy][ix]=[false,0];
+					bhaslineY[iz][iy][ix]=[false,0];
+					bhaslineZ[iz][iy][ix]=[false,0];
+				}
+			}
+		}
+		let v=0;
+		let colorb = new THREE.Color(0x0000B2); //blue
+		let colorr = new THREE.Color(0xB20000); //red
+
+		//iterate through the potential array
+		for (let iz=0 ; iz< EPSystem.pa_length_z; iz++){
+			for (let iy = 0 ; iy < EPSystem.pa_length_y ; iy++){
+				for (let ix=0 ; ix < EPSystem.pa_length_x ; ix++){
+					if ( EPSystem.isElectrode[iz][iy][ix] ){
+						v= EPSystem.potential[iz][iy][ix];
+						let c= colorb; //default blue
+						if (v>=0){
+							c=colorr;
+						}
+
+						bhaslineX[iz][iy][ix] = [true,c];
+						bhaslineX[iz][iy+1][ix] = [true,c];
+						bhaslineX[iz+1][iy][ix] = [true,c];
+						bhaslineX[iz+1][iy+1][ix] = [true,c];
+
+						bhaslineY[iz][iy][ix] = [true,c];
+						bhaslineY[iz][iy][ix+1] = [true,c];
+						bhaslineY[iz+1][iy][ix] = [true,c];
+						bhaslineY[iz+1][iy][ix+1] = [true,c];
+
+						bhaslineZ[iz][iy][ix] = [true,c];
+						bhaslineZ[iz][iy][ix+1] = [true,c];
+						bhaslineZ[iz][iy+1][ix] = [true,c];
+						bhaslineZ[iz][iy+1][ix+1] = [true,c];
+					}
+				}
+			}
+		}
+
+		let nlinemeshes=0; //for debugging the number of line meshes drawn
+
+		//Lines in all directions
+		for (let iz=0 ; iz<= EPSystem.pa_length_z; iz++){
+			for (let iy = 0 ; iy <= EPSystem.pa_length_y ; iy++){
+				for (let ix=0 ; ix <= EPSystem.pa_length_x ; ix++){
+					//Determine the color for the line based on electrode voltage near the point;
+					
+					let lines=[];
+					let col0=null;
+
+					if (bhaslineX[iz][iy][ix][0]){
+						let p0= new THREE.Vector3( (ix - 0.5) * EPSystem.dx ,  (iy-0.5)* EPSystem.dy , (iz-0.5) * EPSystem.dz ) ;
+						let p1= new THREE.Vector3( (ix + 0.5) * EPSystem.dx ,  (iy-0.5)* EPSystem.dy , (iz-0.5) * EPSystem.dz ) ;
+
+						lines.push(p0);
+						lines.push(p1);
+						col0 =  bhaslineX[iz][iy][ix][1];
+					}
+					if (bhaslineY[iz][iy][ix][0]){
+						let p0= new THREE.Vector3( (ix - 0.5) * EPSystem.dx ,  (iy-0.5)* EPSystem.dy , (iz-0.5) * EPSystem.dz ) ;
+						let p1= new THREE.Vector3( (ix - 0.5) * EPSystem.dx ,  (iy+0.5)* EPSystem.dy , (iz-0.5) * EPSystem.dz ) ;
+
+						lines.push(p0);
+						lines.push(p1);
+						col0 =  bhaslineY[iz][iy][ix][1];
+					}
+					if (bhaslineZ[iz][iy][ix][0]){
+						let p0= new THREE.Vector3( (ix - 0.5) * EPSystem.dx ,  (iy-0.5)* EPSystem.dy , (iz-0.5) * EPSystem.dz ) ;
+						let p1= new THREE.Vector3( (ix - 0.5) * EPSystem.dx ,  (iy-0.5)* EPSystem.dy , (iz+0.5) * EPSystem.dz ) ;
+
+						lines.push(p0);
+						lines.push(p1);
+						col0 =  bhaslineZ[iz][iy][ix][1];
+					}
+
+					if (lines.length>0){
+
+						const geom = new THREE.BufferGeometry().setFromPoints(lines);
+
+						const mesh = new THREE.LineSegments(geom, new THREE.LineBasicMaterial({	color: col0}) );
+						PAModelsGroup.add (mesh);
+						nlinemeshes++;
+					}
+
+				}
+			}
+		}
+
+		console.debug("nlinemeshes = " + nlinemeshes.toString() );
+
+		render();
+	}
+}
+
+
+function updateEPElectrodesModelsGroupLineRedux2(){
+	//TODO: Instead of drawing a cube for each electrode point, reduce the number of lines by checking continuity
+	//along each axis
+
+	//NOT WORKING WELL
+
+	if ( EPSystem != null ){
+		if (threejsScene == null ){
+			initTHREEIonSimViewer();
+		}
+
+		//Clears elements in PAModelsGroup
+		//PAModelsGroup.children=[]; //Deletes all elements
+		PAModelsGroup.clear();
+
+
+		let bhaslineX=new Array(EPSystem.pa_length_z+1);
+		let bhaslineY=new Array(EPSystem.pa_length_z+1);
+		let bhaslineZ=new Array(EPSystem.pa_length_z+1);
+
+
+		//initialise
+		for (let iz=0 ; iz<= EPSystem.pa_length_z; iz++){
+
+			bhaslineX[iz] = new Array(EPSystem.pa_length_y+1);
+			bhaslineY[iz] = new Array(EPSystem.pa_length_y+1);
+			bhaslineZ[iz] = new Array(EPSystem.pa_length_y+1);
+
+			for (let iy = 0 ; iy <= EPSystem.pa_length_y ; iy++){
+
+				bhaslineX[iz][iy] = new Array(EPSystem.pa_length_x+1);
+				bhaslineY[iz][iy] = new Array(EPSystem.pa_length_x+1);
+				bhaslineZ[iz][iy] = new Array(EPSystem.pa_length_x+1);
+
+				for (let ix=0 ; ix <= EPSystem.pa_length_x ; ix++){
+					//Work out if this section should have line or not
+					bhaslineX[iz][iy][ix]=false;
+					bhaslineY[iz][iy][ix]=false;
+					bhaslineZ[iz][iy][ix]=false;
+				}
+			}
+		}
+
+		//iterate through the potential array
+		for (let iz=0 ; iz< EPSystem.pa_length_z; iz++){
+			for (let iy = 0 ; iy < EPSystem.pa_length_y ; iy++){
+				for (let ix=0 ; ix < EPSystem.pa_length_x ; ix++){
+					if ( EPSystem.isElectrode[iz][iy][ix] ){
+						bhaslineX[iz][iy][ix] = true;
+						bhaslineX[iz][iy+1][ix] = true;
+						bhaslineX[iz+1][iy][ix] = true;
+						bhaslineX[iz+1][iy+1][ix] = true;
+
+						bhaslineY[iz][iy][ix] = true;
+						bhaslineY[iz][iy][ix+1] = true;
+						bhaslineY[iz+1][iy][ix] = true;
+						bhaslineY[iz+1][iy][ix+1] = true;
+
+						bhaslineZ[iz][iy][ix] = true;
+						bhaslineZ[iz][iy][ix+1] = true;
+						bhaslineZ[iz][iy+1][ix] = true;
+						bhaslineZ[iz][iy+1][ix+1] = true;
+					}
+				}
+			}
+		}
+
+		let i0=-1;//indexes to signal start and end of line
+		let i1=-1;
+
+		//Lines in the xx direction
+		for (let iz=0 ; iz< EPSystem.pa_length_z; iz++){
+			for (let iy = 0 ; iy < EPSystem.pa_length_y ; iy++){
+				i0=-1;
+				i1=-1;
+				let linepoints=[];
+				for (let ix=0 ; ix < EPSystem.pa_length_x ; ix++){
+					if (bhaslineX[iz][iy][ix]){
+						if (i0==-1){
+							//start of the line
+							i0=ix;
+						}
+
+						if (ix==EPSystem.pa_length_x) i1=ix;
+					}else if(i0!=-1){ //this may not trigger end of the line at the high limit
+						//line had started but now it is finished
+						i1=ix;
+					}
+
+					if (i0!=-1 && i1 !=-1){
+						//Draw line
+						let p0= new THREE.Vector3( (i0 - 0.5) * EPSystem.dx ,  (iy-0.5)* EPSystem.dy , (iz-0.5) * EPSystem.dz ) ;
+						let p1= new THREE.Vector3( (i1 - 0.5) * EPSystem.dx ,  (iy-0.5)* EPSystem.dy , (iz-0.5) * EPSystem.dz ) ;
+						const geom = new THREE.BufferGeometry().setFromPoints([p0,p1]);
+
+						//Determine the color for the line based on electrode voltage near the first point
+						let color0= new THREE.Color(0x000000);
+						let v= 0;
+						if (EPSystem.isElectrode[iz][iy][i0]){
+							v= EPSystem.potential[iz][iy][i0];
+						}else if(iy>0){
+							if(EPSystem.isElectrode[iz][iy-1][i0]){
+								v= EPSystem.potential[iz][iy-1][i0];
+							}else if(iz>0){
+								if(EPSystem.isElectrode[iz-1][iy-1][i0]){
+									v= EPSystem.potential[iz-1][iy-1][i0];
+								}
+							}
+						}else if (iz>0){
+							if(EPSystem.isElectrode[iz-1][iy][i0] ){
+								v= EPSystem.potential[iz-1][iy][i0];
+							}
+						}
+
+						if (v>=0){
+							color0.r=0.7;
+							color0.g=0.0;
+							color0.b=0.0; //red
+						}else{
+							color0.r=0.0;
+							color0.g=0.0;
+							color0.b=0.7; //blue
+						}
+						const mesh = new THREE.LineSegments(geom, new THREE.LineBasicMaterial({	color: color0}) );
+						PAModelsGroup.add (mesh);
+
+						i0=-1;//resets for next segment
+						i1=-1;
+					}
+
+				}
+			}
+		}
+
+
+		//Lines in yy direction
+		for (let iz=0 ; iz< EPSystem.pa_length_z; iz++){
+			for (let ix = 0 ; ix < EPSystem.pa_length_x ; ix++){
+				i0=-1;
+				i1=-1;
+				for (let iy=0 ; iy < EPSystem.pa_length_y ; iy++){
+					if (bhaslineY[iz][iy][ix]){
+						if (i0==-1){
+							//start of the line
+							i0=iy;
+						}
+
+						if (iy==EPSystem.pa_length_y) i1=iy;
+					}else if(i0!=-1){ //this may not trigger end of the line at the high limit
+						//line had started but now it is finished
+						i1=iy;
+					}
+
+					if (i0!=-1 && i1 !=-1){
+						//Draw line
+						let p0= new THREE.Vector3( (ix - 0.5) * EPSystem.dx ,  (i0-0.5)* EPSystem.dy , (iz-0.5) * EPSystem.dz ) ;
+						let p1= new THREE.Vector3( (ix - 0.5) * EPSystem.dx ,  (i1-0.5)* EPSystem.dy , (iz-0.5) * EPSystem.dz ) ;
+						const geom = new THREE.BufferGeometry().setFromPoints([p0,p1]);
+
+						//Determine the color for the line based on electrode voltage near the first point
+						let color0= new THREE.Color(0x000000);
+						let v= 0;
+						if (EPSystem.isElectrode[iz][i0][ix]){
+							v= EPSystem.potential[iz][i0][ix];
+						}else if(ix>0){
+							if(EPSystem.isElectrode[iz][i0][ix-1]){
+								v= EPSystem.potential[iz][i0][ix-1];
+							}else if(iz>0){
+								if(EPSystem.isElectrode[iz-1][i0][ix-1]){
+									v= EPSystem.potential[iz-1][i0][ix-1];
+								}
+							}
+						}else if (iz>0){
+							if(EPSystem.isElectrode[iz-1][i0][ix] ){
+								v= EPSystem.potential[iz-1][i0][ix];
+							}
+						}
+						
+						if (v>=0){
+							color0.r=0.7;
+							color0.g=0.0;
+							color0.b=0.0; //red
+						}else{
+							color0.r=0.0;
+							color0.g=0.0;
+							color0.b=0.7; //blue
+						}
+						const mesh = new THREE.LineSegments(geom, new THREE.LineBasicMaterial({	color: color0}) );
+						PAModelsGroup.add (mesh);
+
+						i0=-1;//resets for next segment
+						i1=-1;
+					}
+
+				}
+			}
+		}
+
+		render();
+	}
+}
+
+var canvasPASurfacePlot = document.getElementById("canvasPASurfacePlot");
+var canvasPASurfacePlot_2Dctx = canvasPASurfacePlot.getContext('2d');
+var EPProbePlaneOrientation = "XY";
+var slider_planeloc = document.getElementById("slider_planeloc");
+
+function updateEPProbePlane(){
+	//Called when user changes the plane location
+	if (EPSystem != null ){
+		if ( threejsScene  == null ){
+			initTHREEIonSimViewer();
+		}
+
+		//If there is already a plane, delete it
+		if ( EPProbePlane != null ){
+			threejsScene.remove (EPProbePlane);
+			EPProbePlane = null; //dispose
+		}
+
+		let slider_planeloc_value = parseFloat(slider_planeloc.value);
+		//console.debug("slider value is " + slider_planeloc_value.toString() );
+
+		//Fix potential slider value if it exceeds limits
+		switch (EPProbePlaneOrientation){
+			case "XY":
+				slider_planeloc_value = Math.min(slider_planeloc_value,EPSystem.pa_length_z-1);
+				break;
+			case "XZ":
+				slider_planeloc_value = Math.min(slider_planeloc_value,EPSystem.pa_length_y-1);
+				break;
+			case "YZ":
+				slider_planeloc_value = Math.min(slider_planeloc_value,EPSystem.pa_length_x-1);
+				break;
+		}
+		//Set the corrected value
+		slider_planeloc.value = slider_planeloc_value;
+
+		let plane0= null;
+		
+		switch (EPProbePlaneOrientation){
+			case "XY":
+				//XY plane, rotate to get other orientations
+				plane0 = new THREE.PlaneBufferGeometry( EPSystem.dx*EPSystem.pa_length_x , EPSystem.dy*EPSystem.pa_length_y );
+				plane0.translate (EPSystem.pa_length_x* EPSystem.dx /2 ,
+					EPSystem.pa_length_y* EPSystem.dy /2,
+					slider_planeloc_value);
+				//No rotation
+				break;
+			case "XZ":
+				plane0 = new THREE.PlaneBufferGeometry( EPSystem.dx*EPSystem.pa_length_x , EPSystem.dz*EPSystem.pa_length_z );
+				plane0.rotateX(Math.PI/2);
+				plane0.translate (EPSystem.pa_length_x* EPSystem.dx /2 ,
+					slider_planeloc_value,
+					EPSystem.pa_length_z* EPSystem.dz /2
+					);
+				break;
+			case "YZ":
+				plane0 = new THREE.PlaneBufferGeometry( EPSystem.dz*EPSystem.pa_length_z , EPSystem.dy*EPSystem.pa_length_y );
+				plane0.rotateY(Math.PI/2);
+				plane0.translate (slider_planeloc_value,
+					EPSystem.pa_length_y* EPSystem.dy /2 ,
+					EPSystem.pa_length_z* EPSystem.dz /2
+					);
+				break;
+		}
+		
+		if (plane0!=null){
+			const planematerial = new THREE.MeshBasicMaterial({
+							color: 0x00FFFF, //cyan
+							opacity: 0.5,
+							transparent: true,
+							side: THREE.DoubleSide,
+			});
+		
+			if (chkbxPlaneVisible.checked){
+				EPProbePlane = new THREE.Mesh(plane0,planematerial);
+
+				threejsScene.add(EPProbePlane);
+				render();
+			}
+
+			//Draw the surface plot
+			//Clears all area
+			canvasPASurfacePlot_2Dctx.clearRect(0,0,canvasPASurfacePlot.clientWidth,canvasPASurfacePlot.clientHeight);
+
+			let deltaPA = EPSystem.pa_max - EPSystem.pa_min;
+
+			//Draws, by drawing filled rectcangles and setting the scale on the context to resize.
+
+			canvasPASurfacePlot_2Dctx.setTransform(1, 0, 0, 1, 0, 0); //Reset scale to prevent errors
+
+			//let iz0 = slider_planeloc_value;
+
+			let i0max = 0, i1max=0; //Limits of the for loop
+			let i2 = slider_planeloc_value;
+
+			switch (EPProbePlaneOrientation){
+				case "XY":
+					i0max = EPSystem.pa_length_y;
+					i1max = EPSystem.pa_length_x;
+					break;
+				case "XZ":
+					i0max = EPSystem.pa_length_z;
+					i1max = EPSystem.pa_length_x;
+					break;
+				case "YZ":
+					i0max = EPSystem.pa_length_z;
+					i1max = EPSystem.pa_length_y;
+					break;
+			}
+
+			canvasPASurfacePlot_2Dctx.scale( canvasPASurfacePlot.clientWidth/ i1max ,
+				canvasPASurfacePlot.clientHeight/ i0max ); //Fill the whole canvas
+
+
+			for (let i0 = 0 ; i0< i0max ; i0++){
+				for (let i1 = 0 ; i1 < i1max ; i1++){
+					let v = 0;
+
+					//This is probably slow doing switch for each iteration
+					switch (EPProbePlaneOrientation){
+						case "XY":
+							v=EPSystem.potential[i2][i0][i1]; //[z][y][x]
+							break;
+						case "XZ":
+							v=EPSystem.potential[i0][i2][i1];
+							break;
+						case "YZ":
+							v= EPSystem.potential[i0][i1][i2]
+					}
+
+					let greyv = Math.floor((v-EPSystem.pa_min)/ deltaPA * 255);
+
+					canvasPASurfacePlot_2Dctx.fillStyle = "rgb(" + greyv.toString()
+						+ "," + greyv.toString() + "," + greyv.toString() + ")";
+					canvasPASurfacePlot_2Dctx.fillRect( i1, i0 , 1.5, 1.5 );
+
+				}
+			}
+		}
+	}
+}
+
+function slider_planeloc_oninput(event){
+	slider_planeloc_updateinfo();
+	updateEPProbePlane();
+}
+
+function slider_planeloc_updateinfo(){
+	document.getElementById("slider_planeloc_value").innerHTML = document.getElementById("slider_planeloc").value;
+}
+
+function radioPlane_onclick(){
+	updatePlaneOrientation();
+
+	updateEPProbePlane();
+}
+
+
+function updatePlaneOrientation(){
+	if (EPSystem != null){
+		let max=0;
+		let planeaxis = "";
+
+		//Check which radiobutton is selected
+		if (document.getElementById("radioPlaneXY").checked){
+			EPProbePlaneOrientation = "XY";
+			max = EPSystem.pa_length_z;
+			planeaxis = "Z";
+		}else if( document.getElementById("radioPlaneXZ").checked ){
+			EPProbePlaneOrientation = "XZ";
+			max = EPSystem.pa_length_y;
+			planeaxis = "Y";
+		}else if(document.getElementById("radioPlaneYZ").checked){
+			EPProbePlaneOrientation = "YZ";
+			max = EPSystem.pa_length_x;
+			planeaxis = "X";
+		}
+
+		//Make sure slider limits are ok
+		//let paplaneslider = document.getElementById("slider_planeloc");
+		slider_planeloc.min = 0;
+		slider_planeloc.max = max-1;
+		if (slider_planeloc.value > max-1) paplaneslider.value=max-1;
+
+		document.getElementById("slider_planeloc_axis").innerHTML = planeaxis;
+
+		slider_planeloc_updateinfo();
+	}
+
+}
+
+//let ionsim = null; //TODO: This should be the project "base object"
+
+function btnFlyParticles(event){
+	let bcontinue = true;
+
+	if (ionsim!=null){ //Maybe is not necessary to check convergence
+		if (!EPSystem.isConverged){
+			bcontinue=false;
+			if (window.confirm("Electric Potential array not converged. Do you wish to continue?")){
+				bcontinue=true;
+			}else{
+				bcontinue=false;
+			}
+		}
+		
+		if (bcontinue){
+
+			//Read deltat
+			let deltat0 = parseFloat(document.getElementById("deltat").value);
+			//TODO: Check deltat0 is ok
+			ionsim.timeStep_s = deltat0;
+
+			//Start simulation
+			ionsim.bSimulationAutoRestart=true;
+			ionsim.startSimulation();
+
+			//animate();
+
+			//flyParticleContinouslyIteration();
+			//regularlyUpdateParticles3DVisualsFromIonSim();
+
+		}
+	}
+}
+function btnStopFlyParticles(event){
+	ionsim.stopSimulation();
+	//ionsim.bSimulationStop=true; //this should stop the simulation
+	//cancelAnimationFrame();
+	//render();
+	//stop animation
+}
+
+// function regularlyUpdateParticles3DVisualsFromIonSim(){
+// 	updateParticles3DVisualsFromIonSim();
+
+// 	if (!ionsim.bSimulationStop){
+// 		setTimeout( regularlyUpdateParticles3DVisualsFromIonSim , 16); //16ms gives about 60 fps
+// 	}
+// }
+
+// function setupNewParticle(){
+
+// 	//Setups new particle in the simulator and in the 3D scene
+// 	//new CPArticle(x_m ,y_m , z_m , vx_ms,vy_ms, vz_ms , charge_C , mass_kg)
+// 	let p0 = new CParticle( 10 ,10 , 15 ,
+// 		 0, 0.1 , 0 , 
+// 		 -1 , //charge_C
+// 		 1 //mass_kg
+// 		 ); 
+
+// 	ionsim.addParticle( p0 ) ;
+
+// 	//Add particle to 3D model and to scene
+
+// 	//TODO: should be a functtion that creates a model for each particle in ionsim
+// 	let particle3DGeom = new THREE.SphereBufferGeometry(
+// 		ionsim.dx / 2 ,//radius
+// 		10,
+// 		10
+// 	);
+	
+
+// 	let particle3DMat = new THREE.MeshBasicMaterial( {
+// 		color: 0x000000, //black
+// 	});
+
+// 	let particle3DMesh = new THREE.Mesh(particle3DGeom , particle3DMat);
+// 	particle3DMesh.position.set( p0.x_m , p0.y_m , p0.z_m );
+
+// 	particles3DGroup.children = []; //Clears 3D models f particles
+
+// 	particles3DGroup.add( particle3DMesh ) ;
+
+// }
+
+//TODO: Move this iterative simulation to the CIonSimulator class
+// function flyParticleContinouslyIteration(){
+
+
+// 	//Do one iteration of the particle flying
+// 	//Check status
+// 	//Update visuals,
+
+// 	ionsim.runiterationstep();
+
+// 	updateParticles3DVisualsFromIonSim();
+
+// 	if (ionsim.particles[0].status == CParticle.statusvalues.OK ){
+// 		//Continues simulation
+// 		setTimeout(flyParticleContinouslyIteration , 10);
+// 	}else{
+// 		//particle hit the buffers
+// 		//Delete particle and create a new one
+// 		//ionsim.clearParticles();
+// 		//setupNewParticle(); //this will also clear the 3D models and recreate
+// 		//setTimeout(flyParticleContinouslyIteration , 10);
+// 	}
+// }
+
+function initParticles3DVisualsFromIonSim(){
+	if (ionsim != null){
+		//initTHREEIonSimViewer();
+		//assumes that ionsim.particles and particles3DGroup.children are 'synchronised'
+		let ionsimps = ionsim.particles;
+
+		//particles3DGroup.children=[]; //clears //TODO: Have a better way to dispose
+		particles3DGroup.clear();
+		
+
+		//map_Part3D_CParticle = new Map();
+
+		for (let i = 0 ; i< ionsimps.length ; i++){
+			let p0 = ionsimps[i];
+
+			let particle3DGeom = new THREE.SphereBufferGeometry(
+				ionsim.EP.dx / 2 ,//radius
+				5,
+				5
+				);
+			let particle3DMat = new THREE.MeshBasicMaterial( {
+				color: 0x00D000, //green
+			});
+
+			let particle3DMesh = new THREE.Mesh(particle3DGeom , particle3DMat);
+			particle3DMesh.position.set( p0.x_m , p0.y_m , p0.z_m );
+			particles3DGroup.add( particle3DMesh ) ;
+			
+		}
+		render();
+	}			
+}
+
+var txtFlyRunningStatus = document.getElementById("txtFlyRunningStatus");
+var txtFlyTimeElapsed = document.getElementById("txtFlyTimeElapsed");
+var txtFlyIteration = document.getElementById("txtFlyIteration");
+
+function updateParticles3DVisualsFromIonSim(bDoRendering=false){
+	//To update particle positions visuals
+	//Useful to use during Particles Flying.
+
+	if (ionsim != null){
+
+		//assumes that ionsim.particles and particles3DGroup.children are 'synchronised'
+		let ionsimps = ionsim.particles;
+		
+		if (particles3DGroup.children.length == ionsimps.length ){
+			for (let i = 0 ; i< ionsimps.length ; i++){
+				let p0 = ionsimps[i];
+				particles3DGroup.children[i].position.set(
+					p0.x_m , p0.y_m , p0.z_m );
+			}
+		}else{
+			//synchronize
+			initParticles3DVisualsFromIonSim();
+		}
+		let isParticlesFlying = false;
+		if ( ionsim.bSimulationStop==false && ionsim.iteration>0){
+			isParticlesFlying=true;
+		}
+		if(isParticlesFlying){
+			txtFlyRunningStatus.innerHTML="Running";
+			txtFlyTimeElapsed.innerHTML = ionsim.timeElapsed_s.toFixed(2);
+			txtFlyIteration.innerHTML = ionsim.iteration.toString();
+		}else{
+			txtFlyRunningStatus.innerHTML="Stopped";
+			txtFlyTimeElapsed.innerHTML = 0;
+			txtFlyIteration.innerHTML = 0;
+		}
+
+		//Do not render unless requested
+		if (bDoRendering){
+			render();
+		}
+
+	}
+}
+
+function applyPresetSetup(){
+	//Read the preset setup and applies
+
+	let setup0 = document.getElementById("selectPresetSetup").value;
+
+	switch (setup0){
+		case "twoElectrodes":{
+			//Creates system and then 
+			EPSystem = new CPotentialArray();
+			//Change here the size of the array if needed
+
+			//Creates electrodes
+			EPSystem.addRemoveBoxElectIndex(5,35 , 5,35 , 10,10 , -1.0, true);
+			EPSystem.addRemoveBoxElectIndex(5,35 , 5,35 , 30,30 , +1.0, true);
+
+
+			ionsim= new CIonSimulator(EPSystem);
+			//Creates also the particle source			
+			let p0 = new CParticle( 10 ,10 , 15 ,
+				 1.0, 0.0 , 0 , //velocity
+		 		-1 , //charge_C
+		 		1 //mass_kg
+			);			
+			ionsim.addParticleSource( p0 ) ;
+
+			//Partciles with different velocities
+			ionsim.addParticleSource( new CParticle( 10 ,10 , 15 ,  2.0, 0.0 , 0 , 	-1 , 1 	) ) ;
+			ionsim.addParticleSource( new CParticle( 10 ,10 , 15 ,  3.0, 0.0 , 0 , 	-1 , 1 	) ) ;
+			ionsim.addParticleSource( new CParticle( 10 ,10 , 15 ,  4.0, 0.0 , 0 , 	-1 , 1 	) ) ;
+			ionsim.addParticleSource( new CParticle( 10 ,10 , 15 ,  5.0, 0.0 , 0 , 	-1 , 1 	) ) ;
+
+			ionsim.addParticleSource( new CParticle( 35 ,35 , 15 ,  -1.0, 0.0 , 0 , 	1 , 1 	) ) ;
+			ionsim.addParticleSource( new CParticle( 35 ,35 , 15 ,  -2.0, 0.0 , 0 , 	1 , 1 	) ) ;
+			ionsim.addParticleSource( new CParticle( 35 ,35 , 15 ,  -3.0, 0.0 , 0 , 	1 , 1 	) ) ;
+			ionsim.addParticleSource( new CParticle( 35 ,35 , 15 ,  -4.0, 0.0 , 0 , 	1 , 1 	) ) ;
+			ionsim.addParticleSource( new CParticle( 35 ,35 , 15 ,  -5.0, 0.0 , 0 , 	1 , 1 	) ) ;
+
+			break;
+		}
+		case "quadBender":{
+			//Creates a quadrupole bender
+			let width=100;
+			let height=1;
+
+			EPSystem = new CPotentialArray(width,width,height);
+
+			let midp = width/2;
+			let c0 = width/10; ; let c1= width-c0;
+			let r0 = width/3.5;
+			let shieldw = width/20;
+
+			//Creates electrodes
+			EPSystem.addRemoveCylElect( c0,c0,0, r0,height, "z" , +1, true);//  x,y,z, r,h, dir , elpotvalue, badd=true
+			EPSystem.addRemoveCylElect( c1,c1,0, r0,height, "z" , +1, true);//  x,y,z, r,h, dir , elpotvalue, badd=true
+			EPSystem.addRemoveCylElect( c0,c1,0, r0,height, "z" , -1, true);//  x,y,z, r,h, dir , elpotvalue, badd=true
+			EPSystem.addRemoveCylElect( c1,c0,0, r0,height, "z" , -1, true);//  x,y,z, r,h, dir , elpotvalue, badd=true
+			
+			//Remove borders
+			EPSystem.addRemoveBoxElect(0,c0 , 0,width , 0,height , 0, false);
+			EPSystem.addRemoveBoxElect(c1,width , 0,width , 0,height , 0, false);
+			EPSystem.addRemoveBoxElect( 0,width , 0,c0 , 0,height , 0, false);
+			EPSystem.addRemoveBoxElect( 0,width , c1,width , 0,height , 0, false);
+
+			//Shield
+			EPSystem.addRemoveBoxElect(0,shieldw , 0,width , 0,height , 0, true);
+			EPSystem.addRemoveBoxElect(width-shieldw,width , 0,width , 0,height , 0, true);
+			EPSystem.addRemoveBoxElect( 0,width , 0,shieldw , 0,height , 0, true);
+			EPSystem.addRemoveBoxElect(  0,width , width-shieldw,width , 0,height , 0, true);
+			//Shield apertures
+			EPSystem.addRemoveBoxElect(midp-shieldw, midp+shieldw , 0,width , 0,height , 0, false);
+			EPSystem.addRemoveBoxElect( 0,width , midp-shieldw, midp+shieldw , 0,height , 0, false);
+
+			ionsim= new CIonSimulator(EPSystem);
+			//Add particle sources
+			//Particles with different velocities emerging from the same side
+			let z0= (height-1) / 2;
+			if (height==1) z0=0;
+			ionsim.addParticleSource( new CParticle(
+				0,midp,z0, //position
+				1.0,0.0,0.0 , //velocity
+				1 , // charge
+				1 ) //mass 
+			);
+			ionsim.addParticleSource( new CParticle( 0,midp,z0, 1.1,0.0,0.0 , 	1 , 1 ) );
+			ionsim.addParticleSource( new CParticle( 0,midp,z0, 1.2,0.0,0.0 , 	1 , 1 ) );
+			ionsim.addParticleSource( new CParticle( 0,midp,z0, 1.3,0.0,0.0 , 	1 , 1 ) );
+			ionsim.addParticleSource( new CParticle( 0,midp,z0, 1.4,0.0,0.0 , 	1 , 1 ) );
+			ionsim.addParticleSource( new CParticle( 0,midp,z0, 1.5,0.0,0.0 , 	1 , 1 ) );
+			ionsim.addParticleSource( new CParticle( 0,midp,z0, 1.6,0.0,0.0 , 	1 , 1 ) );
+			ionsim.addParticleSource( new CParticle( 0,midp,z0, 1.7,0.0,0.0 , 	1 , 1 ) );
+			ionsim.addParticleSource( new CParticle( 0,midp,z0, 1.8,0.0,0.0 , 	1 , 1 ) );
+			ionsim.addParticleSource( new CParticle( 0,midp,z0, 1.9,0.0,0.0 , 	1 , 1 ) );
+			ionsim.addParticleSource( new CParticle( 0,midp,z0, 2.0,0.0,0.0 , 	1 , 1 ) );
+			ionsim.addParticleSource( new CParticle( 0,midp,z0, 2.1,0.0,0.0 , 	1 , 1 ) );
+			break;
+		}
+		case "tipSurface":{
+			//TODO
+			break;
+		}
+		case "einzelLens":{
+			let width=20;
+			let height=100;
+			EPSystem = new CPotentialArray(width, width , height);
+
+			let elWidth = width/2 * 0.8 ;
+			let elSpace = elWidth / 4;
+			let pos0 = elWidth;
+			let c0 = width/2;
+			let outerElRadius = elWidth*1.2;
+			let innerElRadius = elWidth;
+
+			EPSystem.addRemoveCylElect(c0 , c0 , pos0, 
+				outerElRadius , //radius
+				elWidth, //length
+				"z", //electrode direction
+				0, //+1V
+				true); //add electrode
+			pos0+= elWidth + elSpace;
+			EPSystem.addRemoveCylElect(c0 , c0 , pos0, outerElRadius , elWidth, "z", -10, true);
+			pos0 += elWidth + elSpace;
+			EPSystem.addRemoveCylElect(c0 , c0 , pos0, outerElRadius , elWidth, "z", 0, true);
+
+			//Cut the centre(s) so that electrodes are rings, rather than discs
+			EPSystem.addRemoveCylElect(c0 , c0 , 0 , innerElRadius , height , "z", 0, 
+				false); //false is to remove
+
+			//add ions for flying
+			ionsim= new CIonSimulator(EPSystem);
+			//Add particle sources
+			//Particles with different velocities emerging from the same side
+			for ( let ypos = c0 ; ypos > c0*0.6 ; ypos -= c0*0.1 ){
+				ionsim.addParticleSource( new CParticle(
+					c0,ypos,0, //position
+					0.0,0.0, 2.5 , //velocity
+					1 , // charge
+					1 ) //mass 
+				);
+			}
+
+			break;
+		}
+		case "clear":{
+			//Creates system with default PA and a single particle source 
+			EPSystem = new CPotentialArray();
+			//Change here the size of the array if needed
+
+			//No electrodes
+
+			ionsim= new CIonSimulator(EPSystem);
+			//Creates also the particle source			
+			let p0 = new CParticle( 10 , 10 , 15 , //position
+				 1.0, 0.0 , 0 , //velocity
+		 		-1 , //charge_C
+		 		1 //mass_kg
+			);			
+			ionsim.addParticleSource( p0 ) ;
+
+			break;
+		}
+
+	}
+	
+	updatePlaneOrientation();
+
+	//Update relevant visual information
+	updateEPVisuals();
+	
+	initParticles3DVisualsFromIonSim();
+	updateParticleSourcesInfo();
+
+}
+
+// function selectPresetSetup_onchange(event){
+// 	applyPresetSetup();
+// }
+function btnSetupSelPresetApply(event){
+	applyPresetSetup();
+}
+
+function updateEPVisuals(){
+	//updateEPElectrodesModelsGroup();
+	updateEPElectrodesModelsGroupLineRedux1();
+
+	updateEPProbePlane();
+	updateEPConvStatusInfo();
+}
+
+function updateParticleSourcesInfo(){
+	//Updates the table with the text information about particle sources
+
+	if (ionsim != null){
+		//initTHREEIonSimViewer();
+		//assumes that ionsim.particles and particles3DGroup.children are 'synchronised'
+		let ionsimpsources = ionsim.particleSources;
+
+		//map_Part3D_CParticle = new Map();
+
+		let stabledom = document.getElementById("tblParticleSources");
+
+		//Clear table
+		for (let i=0; i<stabledom.rows.length;){
+			stabledom.deleteRow(0);
+		}
+
+		if (ionsimpsources.length >0 ){
+			let headerrow = stabledom.insertRow(0);
+			let cell0= headerrow.insertCell(0); cell0.innerHTML= "mass";
+			let cell1= headerrow.insertCell(1); cell1.innerHTML= "charge";
+			let cell2= headerrow.insertCell(2); cell2.innerHTML= "x";
+			let cell3= headerrow.insertCell(3); cell3.innerHTML= "y";
+			let cell4= headerrow.insertCell(4); cell4.innerHTML = "z";
+			let cell5= headerrow.insertCell(5); cell5.innerHTML = "vx";
+			let cell6= headerrow.insertCell(6); cell6.innerHTML = "vy";
+			let cell7= headerrow.insertCell(7); cell7.innerHTML = "vz";
+			let cell8= headerrow.insertCell(8); cell8.innerHTML = "Ek";
+	
+			for (let i = 0 ; i< ionsimpsources.length ; i++){
+				let p0 = ionsimpsources[i];
+
+				let row = stabledom.insertRow(1);
+				let cell0= row.insertCell(0); cell0.innerHTML= p0.mass_kg.toExponential(2);
+				let cell1= row.insertCell(1); cell1.innerHTML= p0.charge_C.toExponential(2);
+				let cell2= row.insertCell(2); cell2.innerHTML= p0.x_m.toExponential(2);
+				let cell3= row.insertCell(3); cell3.innerHTML= p0.y_m.toExponential(2);
+				let cell4= row.insertCell(4); cell4.innerHTML = p0.z_m.toExponential(2);
+				let cell5= row.insertCell(5); cell5.innerHTML = p0.vx_ms.toExponential(2);
+				let cell6= row.insertCell(6); cell6.innerHTML = p0.vy_ms.toExponential(2);
+				let cell7= row.insertCell(7); cell7.innerHTML = p0.vz_ms.toExponential(2);
+				let cell8= row.insertCell(8); cell8.innerHTML = p0.KineticEnergy().toExponential(2);
+			}
+		}
+	}			
+}
+
+function btnCreatePartSource(event){
+	//Read parameters from fields
+	let x0= parseFloat( document.getElementById("numNewSrcXPos").value );
+	let y0= parseFloat( document.getElementById("numNewSrcYPos").value );
+	let z0= parseFloat( document.getElementById("numNewSrcZPos").value );
+	let vx0= parseFloat( document.getElementById("numNewSrcXVel").value );
+	let vy0= parseFloat( document.getElementById("numNewSrcYVel").value );
+	let vz0= parseFloat( document.getElementById("numNewSrcZVel").value );
+	let m0= parseFloat( document.getElementById("numNewSrcMass").value );
+	let q0 = parseFloat( document.getElementById("numNewSrcCharge").value );
+
+	if (m0>0 && q0!=0){
+		//Create the source
+		if (ionsim!=null){
+			ionsim.addParticleSource( new CParticle (
+				x0 , y0, z0,
+				vx0 , vy0 , vz0 ,
+				q0,
+				m0
+			));
+
+			initParticles3DVisualsFromIonSim();
+			updateParticleSourcesInfo();
+		}
+	}
+}
+
+function btnAddRemoveElectrode(bAdd){
+	//Get parameters from selections and numeric fields
+
+	let numElPot = parseFloat(document.getElementById("numElPot").value);
+
+	if (document.getElementById("radioElectBox").checked){
+		//Box electrode
+		//Get parameters
+		let p = readElBoxInputParameters();
+
+		//Create/Remove electrode
+		EPSystem.addRemoveBoxElect( p.x0, p.x1, p.y0, p.y1, p.z0, p.z1, numElPot, bAdd);
+		
+	}else if(document.getElementById("radioElectCyl").checked){ //TODO
+		//Cylinder electrode
+		//Get parameters
+		let p = readElCylInputParameters();
+		EPSystem.addRemoveCylElect( p.x, p.y, p.z, p.r, p.h, p.dir, numElPot, bAdd);
+
+	}
+
+	//Update visual
+	updateEPVisuals();
+}
+function readElBoxInputParameters(){
+	let x0 = parseFloat(document.getElementById("numElBoxX0").value);
+	let x1 = parseFloat( document.getElementById("numElBoxX1").value);
+	let y0 = parseFloat(document.getElementById("numElBoxY0").value);
+	let y1 = parseFloat(document.getElementById("numElBoxY1").value);
+	let z0 = parseFloat(document.getElementById("numElBoxZ0").value);
+	let z1 = parseFloat(document.getElementById("numElBoxZ1").value);
+
+	return {x0, x1, y0, y1, z0, z1};
+}
+
+function readElCylInputParameters(){
+	let x=parseFloat(document.getElementById("numElCylX").value);
+	let y=parseFloat(document.getElementById("numElCylY").value);
+	let z=parseFloat(document.getElementById("numElCylZ").value);
+	let r=parseFloat(document.getElementById("numElCylRadius").value);
+	let h=parseFloat(document.getElementById("numElCylHeight").value);
+	let dir="";
+	if (document.getElementById("radioElCylDirX").checked){
+		dir="x";
+	}else if (document.getElementById("radioElCylDirY").checked){
+		dir="y";
+	}else if(document.getElementById("radioElCylDirZ").checked){
+		dir="z";
+	}
+
+	return{ x , y, z, r, h, dir};
+
+}
+
+function btnSetupApply(event){
+	//Apply parameters to EP
+
+	let xpoints = parseInt(document.getElementById("numResolutionXPoints").value);
+	let ypoints = parseInt(document.getElementById("numResolutionYPoints").value);
+	let zpoints = parseInt(document.getElementById("numResolutionZPoints").value);
+	let dx = parseFloat(document.getElementById("numResolutionDx").value);
+	let dy = parseFloat(document.getElementById("numResolutionDy").value);
+	let dz = parseFloat(document.getElementById("numResolutionDz").value);
+
+	EPSystem= new CPotentialArray(xpoints, ypoints, zpoints, dx, dy, dz )
+
+	ionsim= new CIonSimulator(EPSystem);
+
+	//Update relevant visual information
+	updatePlaneOrientation();
+	updateEPVisuals();
+	initParticles3DVisualsFromIonSim();
+	updateParticleSourcesInfo();
+}
+
+var radioElectBox = document.getElementById("radioElectBox");
+var addElBoxInputRegion = document.getElementById("addElBoxInputRegion");
+var radioElectCyl = document.getElementById("radioElectCyl");
+var addElecCylInputRegion = document.getElementById("addElecCylInputRegion");
+function newElectrodeParamChangedDoPreview(){
+	//Updates visibility of parameter inputs based in radioBox status
+	if (radioElectBox.checked){
+		addElBoxInputRegion.style.display="block"
+	}else{
+		addElBoxInputRegion.style.display="none"
+	}
+	if (radioElectCyl.checked){
+		addElecCylInputRegion.style.display="block"
+	}else{
+		addElecCylInputRegion.style.display="none"
+	}
+
+	if (threeElectrodePreview3DModelGroup!=null){
+		threeElectrodePreview3DModelGroup.clear();
+
+		if (document.getElementById("chkbxNewElPreview").checked){
+			//Do preview
+
+			let modelPreviewMesh = null;
+
+			//Box
+			if (document.getElementById("radioElectBox").checked){
+				let p= readElBoxInputParameters();
+				let w = (p.x1-p.x0);
+				let h = (p.y1 - p.y0);
+				let d = (p.z1 - p.z0);
+
+				//Create box with the paramters given
+				modelPreviewGeom = new THREE.BoxBufferGeometry( 
+					w, //width
+					h, //height
+					d //depth
+				);
+				modelPreviewGeom.translate(p.x0 + w/2 , p.y0 + h/2 , p.z0 + d/2);
+
+				let mat= new THREE.MeshBasicMaterial({ color: new THREE.Color(0xFF8000)} ) ;
+
+				modelPreviewMesh = new THREE.Mesh(modelPreviewGeom , mat );
+				
+			}else if(document.getElementById("radioElectCyl").checked ){
+				let p=readElCylInputParameters();
+
+				modelPreviewGeom = new THREE.CylinderBufferGeometry(
+					p.r, //radius top
+					p.r, //radius bottom
+					p.h, //height
+					32 //radial segments
+				);
+				//Cylinder created will have height perpendicular to z-axis?
+				modelPreviewGeom.translate(0,p.h/2,0);
+
+				if (p.dir=="x"){
+					modelPreviewGeom.rotateZ(3*Math.PI/2);
+				}else if(p.dir=="z"){
+					modelPreviewGeom.rotateX(Math.PI/2);
+				}
+
+				modelPreviewGeom.translate(p.x , p.y , p.z);
+				//Translate function exists for BufferGeometry objects
+
+				let mat= new THREE.MeshBasicMaterial({ color: new THREE.Color(0xFF8000)} ) ;
+
+				modelPreviewMesh = new THREE.Mesh(modelPreviewGeom , mat );
+
+			}
+
+			threeElectrodePreview3DModelGroup.add (modelPreviewMesh );
+
+			render();
+		}
+	}
+}
+// function EPProbePlane_reset(){
+// 	document.getElementById("slider_planeloc").value= 0;
+// }
+
+var chkbxPlaneVisible=document.getElementById("chkbxPlaneVisible");
+function chkbxPlaneVisible_onclick(){
+	//checked status?
+
+	updateEPProbePlane();
+}
+
+//Not used
+// function trackballControlChanged(){
+// 	render();
+// }
+
+function resetParticles(event){
+	ionsim.restartParticlesFromSources();
+}
+
+
+//Visual tabs
+function openTab(evt, tabName) {
+  var i, tabcontent, tablinks;
+  tabcontent = document.getElementsByClassName("tabcontent");
+  for (i = 0; i < tabcontent.length; i++) {
+    tabcontent[i].style.display = "none";
+  }
+  tablinks = document.getElementsByClassName("tablinks");
+  for (i = 0; i < tablinks.length; i++) {
+    tablinks[i].className = tablinks[i].className.replace(" active", "");
+  }
+  document.getElementById(tabName).style.display = "block";
+  evt.currentTarget.className += " active";
+}
+
+
+
+//Class to be used for loading and saving document
+class WorkspaceDocument{
+	constructor(){
+		this.ionsim = null;
+		//TODO: other settings? camera?
+	}
+}
+
+
+
+function btnSaveProject_onclick(){
+	let myworkspace = new WorkspaceDocument();
+	myworkspace.ionsim = ionsim;
+
+
+	json_workspace = JSON.stringify(myworkspace);
+	blob0 = new Blob([json_workspace],
+		{ type: "text/plain"}
+		);
+	
+	//This is a trick to save text to a file. It creates a new DOM element containing the blob with the text
+	//and set it as being download type
+	//And then it clicks itself to reveal the savefile dialog
+	const aSave = document.createElement("a");
+	aSave.href = URL.createObjectURL(blob0);
+	aSave.download = "lpionsim_workspace.txt";
+
+	document.body.appendChild(aSave);
+	aSave.click();
+	document.body.removeChild(aSave);
+}
+
+
+//Load function requires these three functions below
+function btnLoadProject_onclick(){
+	//Prompt user to choose a file to load
+
+	var aLoad = document.createElement("input");
+	aLoad.type = "file";
+	
+	//onchange will trigger when  user selects file(s)
+	aLoad.onchange = function(e){
+		var file = e.target.files[0];
+		openDropFile(file);
+	}
+	aLoad.click(); //triggers to open file
+}
+function openDropFile(filename){
+	const reader = new FileReader();
+
+	//Sets the function to call when file has been read
+	reader.onload = function () {
+		functionProcessFileHandler(reader.result); //Calls the relevant function to process data (see above how functionProcessFileHandler is set depending on file type)
+	};
+	reader.readAsText(filename); //Sets how to read the file. Upon successful completion it triggers onload
+}
+function functionProcessFileHandler(text0){
+	myworkspace = JSON.parse(text0);
+	
+	//Assuming that the file is a valid WorkspaceDocument object
+	ionsim_temp = myworkspace.ionsim;
+	
+	//Turn ionsim_temp to a valid ionsim
+
+	ionsim = CIonSimulator.newFromCIonSimulator(ionsim_temp)
+
+	EPSystem = ionsim.EP;
+
+
+	//Warning, when deserialising the ionsim object, the functions associated with the objects are not restored
+	//The best is to reconstruct the objects from serialisation
+	//TODO
+
+
+	//And update everything
+	initTHREEIonSimViewer();
+
+	updateEPVisuals(); //EPElectrodesModels , EPProbePlane and EPConvStatusInfo
+
+	initParticles3DVisualsFromIonSim();
+	//updateParticles3DVisualsFromIonSim();
+
+	updateParticleSourcesInfo();
+
+}
+</script>
+</body>
+</html>
