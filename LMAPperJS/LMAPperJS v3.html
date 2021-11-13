@@ -1,0 +1,1264 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+	<meta charset="utf-8">
+	<title>LMAPperJS</title>
+	<style>
+		body {
+			margin: 20;
+			font-family: 'Lucida Sans Unicode';
+		}
+
+		canvas {
+			display: block;
+		}
+		table, td, th {
+			border: solid black 0pt;
+			border-collapse: collapse;
+			margin: 5px;
+			vertical-align: top;
+		}
+
+		.info tbody td{
+			font-size: small;
+			border: solid black 1pt;
+			border-collapse: collapse;
+			vertical-align: top;
+			table-layout: fixed;
+			padding:3px;
+			width:100px;
+		}
+
+		input{
+			width:50px;
+		}
+
+	</style>
+</head>
+
+<body>
+	<script src="three.js"></script>
+	<!-- <script src="PDBLoader.js"></script> --> <!-- to be removed-->
+	<script src="SPMImage.js"></script>
+	<script src="LPMolecule.js"></script>
+
+	<h1>LMAPperJS</h1>
+
+	<table >
+		<tr >
+			<th>SPM image</th>
+			<th>Viewport 	<br> &#8595 Drop files here &#8595 or <button onclick="btnBrowseFile(event)">browse</button></th>
+			<th>Molecules</th>
+		</tr>
+		<tr>
+			<td>
+				<div class="info">
+					<table>
+						<tr><td >Filename</td><td><span id="tableinfo_SPM_filename"></span> </td></tr>
+						<tr><td style="width:10px">Name</td><td><span id="tableinfo_SPM_name"></span> </td></tr>
+	
+						<tr><td>X-size / nm </td><td><input type="number" id="tableinfo_SPM_xsize" min="0.01" value="0.0" step="0.01" onkeypress="tableinfo_SPM_xsize_onkeypress(event)" disabled></td></tr>
+						<!-- <tr><td>X-size</td><td><span id="tableinfo_SPM_xsize">0</span> nm </td></tr> -->
+	
+						<tr><td>Y-size / nm</td><td><input type="number" id="tableinfo_SPM_ysize" min="0.01" value="0.0" step="0.01" onkeypress="tableinfo_SPM_ysize_onkeypress(event)" disabled ></td></tr>
+						<!-- <tr><td>Y-size</td><td><span id="tableinfo_SPM_ysize">0</span> nm </td></tr> -->
+	
+						<tr><td>xpixels / px </td><td><span id="tableinfo_SPM_xpixels">0</span></td></tr>
+						<tr><td>ypixels / px</td><td><span id="tableinfo_SPM_ypixels">0</span></td></tr>
+					</table>	
+				</div>
+				<br>
+				<div class="info">
+					<table>
+						<th>Corrections</th><th></th>
+						<tr><td>X-scale</td><td><input type="number" name="xscale" id="spmImage_xscale" min="0.1" max="100.0" value="1.00" step="0.01" onkeypress="spmImage_xscale_onkeypress(event)"></td></tr>
+						<tr><td>Y-scale</td><td><input type="number" name="yscale" id="spmImage_yscale" min="0.1" max = "100.0" value="1.00" step="0.01" onkeypress="spmImage_yscale_onkeypress(event)"></td></tr>			
+						<tr><td>Skew / °</td><td><input type="number" name="skew_deg" id="spmImage_skewdeg" min="0.0" max="89.0" value="0.00" step="0.01" onkeypress="spmImage_skew_onkeypress(event)"></td></tr>			
+					</table>
+				</div>
+
+			</td>
+
+			<td style="border:0pt">
+				<canvas id="canvasthreejs" width="512" height="512" style="border: 5px solid rgb(78, 78, 172)"
+					ondrop="canvasthreejs_dropHandler(event)"
+					ondragover="canvasthreejs_dragOverHandler(event)"
+					onmousewheel="canvasthreejs_onwheel(event)"
+					onclick = "canvasthreejs_onclick(event)"
+					onmousemove = "canvasthreejs_onmousemove(event)"
+					onmousedown = "canvasthreejs_onmousedown(event)"
+					onmouseup = "canvasthreejs_onmouseup(event)"
+					onmouseleave= "canvasthreejs_onmouseleave(event)"
+					oncontextmenu = " return false;"
+					>
+				Oops. It looks like your browser does not support canvas element. Without it LMAPperJS cannot show anything!
+				</canvas>
+			</td>
+
+			<td style="border:0pt; ">
+				<br>Number of molecules= <span id="tableinfo_Mol_NMolecules">0</span>
+				<br>
+				<br>Selected
+				<br><button onclick="selMoleculesDelete_onlclick(event)">Delete</button>
+				<button onclick="selMoleculesDuplicate_onlclick(event)">Duplicate</button>
+				<button onclick="selMoleculesMirror_onlclick(event)">Mirror</button>
+				<br>
+				<div class="info">
+					<table id="tableinfo_Molecules"></table>
+				</div>
+
+			</td>
+		</tr>
+		<tr>
+			<td></td>
+			<td>
+				Mouse ( X , Y ) / nm = <span id="workspaceMouseLocationText">(0,0)</span>
+			</td>
+		</tr>
+	</table>
+	
+	<table>
+		<th>Settings</th>
+		
+		<tr>
+			<td>
+				<label>Workspace size</label>
+				<select id="workspaceSizeSelect" onchange="workspaceSize_onchange(event)">
+				<option selected="selected" value="512">512px x 512px</option>
+				<option value="800">800px x 800px</option>
+				<option value="1024">1024px x 1024px</option>
+				</select>
+			</td>
+		</tr>
+	</table>
+	<br>
+	<br>The original and fully featured LMAPper can be found in the SourceForge webpage
+	<a href="https://sourceforge.net/projects/spm-and-mol-viewer/">here</a>.
+	<br>
+	<br>This is a version of LMAPper for browsers. It is under development and is just <b>experimental</b>. Use it at your own risk.
+	<br>
+	<br>Supported file formats:
+	<br>SPM files: Nanonis SXM, WSxM STP ,and bitmap files
+	<br>Molecules: Protein Data Bank (PDB), Chemical Markup Language (CML)
+	<br>
+	<br>Use mouse left-click to select molecules. Drag to move them.
+	<br>Right-click rotates the molecule in the z-axis.
+	<br>Mouse wheel zooms in/out in location pointed by mouse pointer.
+	<br>Middle mouse click and drag, rotates selected molecule freely.
+	<br>
+	<br>If experiencing weird right-click behaviour, disable mouse gestures on your browser.
+	<br>
+	<br>This browser application uses <a href="https://threejs.org">Three.js</a> .
+	<br>
+	<br>By Luis Perdigao, 2020
+	
+
+	<script>
+
+		var canvasthreejs = document.getElementById('canvasthreejs');
+		//context = canvas.getContext('2d');
+
+		var threejsCamera, threejsScene, threejsRenderer;
+		var threejsRaycaster;
+		
+		var MoleculesGroup; //Contains all the molecules as 3D models
+		var SPMImageSurfaceGroupObject;
+
+		//To handle mouse events on the threejs viewport
+		var canvasthreejs_mouse = {
+		  isLeftButtonDown : false,
+		  isRightButtonDown: false,
+		  isMiddleButtonDown: false,
+		  x0:0,
+		  y0:0
+		};
+		
+		var Map_LPMol_MolObj=new Map(); //Javascript Map to relate LPMol and MolObject
+		//Do not use the MolObjects from here, use it from MoleculesGroup
+		//Add elements Map_LPMol_MolObj.set( MolObj, LPMolecule )
+
+
+		var m_spmImage=null;
+		
+		var filename_current="";
+
+		//Initialise the rendering area
+		init();
+
+		var SPMCorrection = { xscale: 1.0 , yscale: 1.0 , skew_deg: 0};
+		//animate();
+
+		function init() {
+
+			threejsScene = new THREE.Scene();
+
+			threejsScene.background = new THREE.Color(0xFFFFFF);
+
+			//threejsCamera = new THREE.PerspectiveCamera(70, canvasthreejs.scrollWidth / canvasthreejs.scrollHeight, 1, 5000);
+			
+			//WORLD UNITS IS ANGSTRONS
+			threejsCamera= new THREE.OrthographicCamera( -20, 20, 20,-20 , 1, 1000 ); //(left,right, top, bottom, near, far) planes. Camera is assumed to be position on the z-axis pointing towards the z-negative direction.
+			threejsCamera.position.z=500; //not sure this works or if there is a camera property with z position
+			setCameraWidth_Angstrons(20);
+			threejsScene.add(threejsCamera);
+
+			var light = new THREE.DirectionalLight(0xffffff, 0.8);
+			light.position.set(0.5, 0.7, 1);
+			threejsScene.add(light);
+			//Light target is by default (0,0,0)
+
+			//TODO: Have a seperate light for the SPM image and molecular models
+			//var light = new THREE.DirectionalLight(0xffffff, 0.5);
+			//light.position.set(- 1, - 1, 1);
+			//threejsScene.add(light);
+
+			//root = new THREE.Group();
+			//threejsScene.add( root );
+			MoleculesGroup = new THREE.Group();
+			threejsScene.add(MoleculesGroup);
+
+			
+			SPMImageSurfaceGroupObject=new THREE.Group();
+			threejsScene.add(SPMImageSurfaceGroupObject);
+
+			//Renderer setup
+			//renderer = new THREE.WebGLRenderer( { antialias: true } );
+			//Use existing canvas to render the scene
+			threejsRenderer = new THREE.WebGLRenderer({ canvas: canvasthreejs });
+			//threejsRenderer = new THREE.WebGLRenderer({ antialias: true, canvas: canvasthreejs });
+			//threejsRenderer.setPixelRatio( window.devicePixelRatio );
+			//threejsRenderer.setSize( canvasthreejs.scrollWidth , canvasthreejs.scrollHeight );
+			
+			//Raycasting to check picking of objects
+			threejsRaycaster = new THREE.Raycaster();
+
+			render(); //Nothing in the scene but renders background
+
+		}
+
+		function setCameraWidth_Angstrons(widthValue_Angs){
+			let aspectratio=canvasthreejs.scrollWidth / canvasthreejs.scrollHeight;
+			//Assumes that the camera is already defined as being ortographic.
+
+			//WORLD UNITS IS ANGSTRONS
+			let w2= widthValue_Angs / 2;
+
+			let xcam = ( threejsCamera.left+threejsCamera.right) / 2 ;
+			let ycam = ( threejsCamera.top+threejsCamera.bottom) / 2 ;
+
+			//Sets new values
+			threejsCamera.left= xcam - w2;
+			threejsCamera.right= xcam + w2;
+			threejsCamera.top= ycam + w2/aspectratio;
+			threejsCamera.bottom= ycam - w2/aspectratio;
+		
+			threejsCamera.updateProjectionMatrix();
+
+		};
+
+		function canvasthreejs_dragOverHandler(ev) {
+			console.log('File(s) in drop zone');
+			// Prevent default behavior (Prevent file from being opened)
+			ev.preventDefault();
+		}
+
+		function canvasthreejs_dropHandler(ev) {
+			console.log('File(s) dropped');
+			// Prevent default behavior (Prevent file from being opened)
+			ev.preventDefault();
+
+			if (ev.dataTransfer.items) {
+				console.log('Drop object as items');
+				// Use DataTransferItemList interface to access the file(s)
+				for (var i = 0; i < ev.dataTransfer.items.length; i++) {
+					// If dropped items aren't files, reject them
+					if (ev.dataTransfer.items[i].kind === 'file') {
+						var file = ev.dataTransfer.items[i].getAsFile();
+						console.log('... file[' + i + '].name = ' + file.name);
+						openDropFile(file);
+					}
+				}
+			} else {
+				// Use DataTransfer interface to access the file(s)
+				for (var i = 0; i < ev.dataTransfer.files.length; i++) {
+					console.log('Drop object as files');
+					console.log('... file[' + i + '].name = ' + ev.dataTransfer.files[i].name);
+					openDropFile(ev.dataTransfer.files[i]);
+				}
+			}
+		}
+
+		function openDropFile(file) {
+			let filename = file.name;
+			console.log("File dropped : " + filename);
+
+			filename_current=filename;
+
+			//Check extension
+			let file_ext = getFileExt(filename).toLowerCase();
+			console.log('... file extension = ' + file_ext);
+
+			let functionProcessFileHandler = null;
+			let functionProcessFileHandlerBMP =null;
+			switch (file_ext) {
+				case 'dat':
+					console.log('Assuming is a Createc DAT file');
+					//functionProcessFileHandler = processCreatecDATFile;
+					//NOT SUPPORTED
+					//TODO
+					break;
+				case 'sxm':
+					console.log('Assuming is a Nanonis SXM file');
+					functionProcessFileHandler = processNanonisSXMFile;
+					break;
+				case 'pdb':
+					console.log('Assuming is a Protein Databank PDB file');
+					functionProcessFileHandler = processProteinDataBankPDBFile;
+					break;
+				case 'cml':
+					console.log('Assuming is a Chemical Markup CML file');
+					functionProcessFileHandler = processChemicalMarkupCMLFile;
+					break;
+				case 'stp':
+					console.log('Assuming is a WSxM STP file');
+					functionProcessFileHandler = processWSxM_STPFile;
+					break;
+				case 'jpg':
+					console.log('Assuming is a bitmap file');
+					functionProcessFileHandlerBMP = processBMPFile1;
+					break;
+				case 'png':
+					console.log('Assuming is a bitmap file');
+					functionProcessFileHandlerBMP = processBMPFile1;
+					break;
+				case 'bmp':
+					console.log('Assuming is a bitmap file');
+					functionProcessFileHandlerBMP = processBMPFile1;
+					break;
+				default:
+					console.log('Unknown extension');
+					functionProcessFileHandler = null;
+			}
+
+			if (functionProcessFileHandler != null) {
+				const reader = new FileReader();
+
+				//Sets the function to call when file has been read
+				reader.onload = function () {
+					//console.log(event.target);
+					functionProcessFileHandler(reader.result); //Calls the relevant function to process data (see above how functionProcessFileHandler is set depending on file type)
+					//Result will contain an ArrayBuffer representing the data
+				};
+				reader.readAsArrayBuffer(file); //Sets how to read the file. Upon successful completion it triggers onload
+			}else if (functionProcessFileHandlerBMP != null){
+				const reader = new FileReader();
+
+				//Sets the function to call when file has been read
+				reader.onload = function () {
+					//console.log(event.target);
+					functionProcessFileHandlerBMP(reader.result); //Calls the relevant function to process data (see above how functionProcessFileHandler is set depending on file type)
+					//Result will contain an ArrayBuffer representing the data
+				}
+				reader.readAsDataURL(file);;
+			}
+		}
+
+		function getFileExt(filename) {
+			return filename.substring(filename.lastIndexOf('.') + 1, filename.length) || filename;
+		}
+
+		function workspaceAddNewMolecule(new_LPMolecule, b_update_display=true){
+
+			//Get the data from the molecule and then create the 3D scence
+			//as a MolRoot object
+
+			if (new_LPMolecule != null){
+				console.log('This molecule has ' + new_LPMolecule.listAtoms.length + ' atoms, and ' + 
+					new_LPMolecule.listBonds.length + ' bonds.');
+				
+				//Centers molecule
+				new_LPMolecule.centerMolecule();
+
+				//Creates the reference models and clones them to make atoms and bonds
+				//var sphereGeometry = new THREE.IcosahedronBufferGeometry(0.5, 2); //Atoms modelled as icosahedrons with same radius (radius, detail),
+				var sphereGeometry = new THREE.SphereBufferGeometry( 1.0, 12, 12 );
+				//detail >1 is effectively a sphere
+				//var bondGeometry = new THREE.BoxBufferGeometry(1, 1, 1); //Bonds modelled as boxes with 1 Angstrong, which are then resized
+
+				var bondGeometry = new THREE.CylinderBufferGeometry( 1, 1, //radiusTop, radiusBottom
+					1, //height
+					8, //radial segments
+					1, //height segments
+					false //openEnded
+					);
+					//Cylinder has height direction perpendicular to y-axis!!
+				bondGeometry.rotateX(Math.PI/2);
+
+				//3d molecule group  (3d models of atoms and bonds)
+				var MolRoot=new THREE.Group();
+
+				//3D models of atoms, one at the time
+				for (let i=0 ; i < new_LPMolecule.listAtoms.length ; i++){
+					let at0 = new_LPMolecule.listAtoms[i];
+					
+					//Get color of the atom
+					var color0 = new THREE.Color( "#" + at0.getElementColorRGBHexString());
+					var material = new THREE.MeshPhongMaterial({ color: color0 });
+
+					//Creates the 3D mesh of the atom
+					var object = new THREE.Mesh(sphereGeometry, material);
+
+					//put the atom 3d representation mesh in the right position
+					var position = new THREE.Vector3( at0.x_Angst , at0.y_Angst , at0.z_Angst);
+					object.position.copy(position);
+
+					//Size the atom to the covalent radius
+					let atRadiusScaled=at0.getCovalentRadius_Angst() * 0.8; //TODO: have a way to adjust scale
+					object.scale.set(atRadiusScaled,atRadiusScaled,atRadiusScaled);
+					//Add atom model to the group
+					MolRoot.add(object);
+				}
+
+				//Bonds
+				for (let i=0 ; i < new_LPMolecule.listBonds.length; i++ ){
+					let bond0 = new_LPMolecule.listBonds[i];
+					let at1 = bond0.atom1;
+					let at2 = bond0.atom2;
+
+					var start = new THREE.Vector3(at1.x_Angst, at1.y_Angst , at1.z_Angst);
+					var end = new THREE.Vector3( at2.x_Angst, at2.y_Angst , at2.z_Angst );
+					
+					var object = new THREE.Mesh(bondGeometry, new THREE.MeshPhongMaterial(0xffffff));
+					
+					object.position.copy(start);
+					object.position.lerp(end, 0.5); //lerp - linear interpolation between object position and end position. This results in midpoint
+					object.scale.set( 0.15 , 0.15, start.distanceTo(end) ); //Basically resizes the bond (represented as box in this case, and resize it, on z having the length=distanceTo(end)
+					object.lookAt(end); //rotates object to face end position
+
+					MolRoot.add(object);
+				}
+
+				//Object MolRoot (3D model of the molecule) created
+				//MoleculesGroup.add(MolRoot);
+			
+				//"Selected molecule" sphere
+				//Uses molecule radius
+				let radius = new_LPMolecule.getMoleculeBoundingSphereRadius();
+				var sphereGeometrySel = new THREE.IcosahedronBufferGeometry(radius, 2);
+				var sphereGeometrySelMaterial = new THREE.MeshBasicMaterial( {
+															color: 0x007070,
+															opacity: 0.0,
+															transparent: true
+														});
+			
+				var object = new THREE.Mesh(sphereGeometrySel, sphereGeometrySelMaterial);
+				MolRoot.add(object);
+					
+				//Add to the MoleculesGroup
+				MoleculesGroup.add(MolRoot);
+
+				clearSelectionMolecules();
+				setMoleculeSelectionStatus(MolRoot,true); //Set only this molecule as 'selected'
+				
+				//Add 3D model and LPmolecule to associative map array
+				Map_LPMol_MolObj.set( MolRoot , new_LPMolecule );
+				
+				if (b_update_display){
+					render();
+
+					//Update text information about the molecules
+					updateMolecules_HTMLInfo();
+				}
+
+				return MolRoot; //returns mol object in case is needed.
+			}
+		}
+
+		function updateMolecules_HTMLInfo(){
+			let nmolecules= MoleculesGroup.children.length;
+
+			document.getElementById("tableinfo_Mol_NMolecules").innerHTML= nmolecules.toString();
+
+			//Create a new table
+			//let new_tbody = document.createElement('tbody');
+
+			let moltable= document.getElementById("tableinfo_Molecules");
+			//moltable.innerHTML-"" //Deletes contents on the table, does not work
+
+			for (let i=0; i<moltable.rows.length;){
+				moltable.deleteRow(0);
+			}
+
+			let selectedMols= getSelectedMoleculesArray();
+			if (selectedMols.length>0) {
+				let headerrow = moltable.insertRow(0);
+				let cell1= headerrow.insertCell(0);
+				let cell2= headerrow.insertCell(1);
+				let cell3= headerrow.insertCell(2);
+				let cell4= headerrow.insertCell(3);
+				cell1.innerHTML= "Name";
+				cell2.innerHTML= "Filename";
+				cell3.innerHTML= "N-atoms";
+				cell4.innerHTML = "N-bonds";
+
+				for (let i=0 ; i<selectedMols.length ; i++){
+					let mol=selectedMols[i];
+
+					//let row = new_tbody.insertRow(0);
+					let row = moltable.insertRow(1);
+					let cell1= row.insertCell(0);
+					let cell2= row.insertCell(1);
+					let cell3= row.insertCell(2);
+					let cell4= row.insertCell(3);
+
+					//The LPMolecule object is not stored. Need to use it to extract this information
+					//cell1.innerHTML= mol.moleculeName;
+					//cell2.innerHTML= mol.listAtoms.length;
+					//cell3.innerHTML = mol.listBonds.length;
+					
+					//Find the LPMolecule associated with the MolObject
+					let lpmol = Map_LPMol_MolObj.get( mol );
+					cell1.innerHTML= lpmol.moleculeName;
+					cell2.innerHTML= lpmol.filename;
+					cell3.innerHTML= lpmol.listAtoms.length;
+					cell4.innerHTML = lpmol.listBonds.length;
+				}
+			}
+		}
+
+		function render() {
+							
+			threejsRenderer.render( threejsScene, threejsCamera );
+
+		};
+
+
+
+/*
+		function animate() {
+
+requestAnimationFrame( animate );
+controls.update();
+
+var time = Date.now() * 0.0004;
+
+root.rotation.x = time;
+root.rotation.y = time * 0.7;
+
+render();
+
+}
+*/
+
+function processProteinDataBankPDBFile(arraybuffer0) {
+			
+	var newMolecule= LPMolecule.getLPMoleculeFromArrBuffPDBFile(arraybuffer0);
+
+	newMolecule.filename=filename_current;
+	
+	//With the LPMolecule returned, draw the molecule.
+	workspaceAddNewMolecule(newMolecule);
+}
+
+function processNanonisSXMFile(arraybuffer0) {
+	//opens the file (arraybuffer0) and then updates display
+	m_spmImage=SPMImage.getSPMImageFromArrBuffSXMFile(arraybuffer0);
+	m_spmImage.filename=filename_current;
+	updateSPMImageDisplay();
+	resetCamera();
+}
+
+function processChemicalMarkupCMLFile(arraybuffer0) {
+	var new_molecule=LPMolecule.getLPMoleculeFromArrBuffCMLFile(arraybuffer0);
+	new_molecule.filename=filename_current;
+	workspaceAddNewMolecule(new_molecule);
+}
+
+function processWSxM_STPFile(arraybuffer0) {
+	//opens the file (arraybuffer0) and then updates display
+	m_spmImage=SPMImage.getSPMImageFromArrBuffWSXMSTPFile(arraybuffer0);
+	m_spmImage.filename=filename_current;
+	updateSPMImageDisplay();
+	resetCamera();
+}
+
+//old
+async function processBMPFile(base64EncString) {
+	//opens the file (arraybuffer0) and then updates display
+	console.log("pre  m_spmImage= SPMImage.getSPMImageFromBitmapFile(base64EncString);");
+
+	//Need to have a await function here to give time to load bitmap.
+	let pr0= new Promise( function(resolve){
+			m_spmImage= SPMImage.getSPMImageFromBitmapFile(base64EncString);
+			
+			myinterval = setInterval( function(){ 
+				console.log("setInterval ");
+				if (m_spmImage != null){
+					console.log("setInterval m_spmImage != null");
+					clearInterval(myinterval);
+					resolve();
+				}
+			}, 100);
+
+		}
+	);
+
+	pr0.then( function dothis(){
+		console.log("pr0.then()");
+		console.log("m_spmImage.xpixels " + m_spmImage.xpixels);
+		m_spmImage.filename=filename_current;
+		updateSPMImageDisplay();
+		resetCamera();
+	}
+	);
+
+	//m_spmImage= SPMImage.getSPMImageFromBitmapFile(base64EncString);
+	
+}
+
+//This code works!!
+function processBMPFile1(base64EncString) {
+	//opens the file (arraybuffer0) and then updates display
+	console.log("pre  m_spmImage= SPMImage.getSPMImageFromBitmapFile(base64EncString);");
+
+	let pr0 = SPMImage.promiseSPMImageFromBitmapFile;
+
+	pr0(base64EncString).then(  (m_spmimage_value) => { //uses the value returned by resolve()
+		m_spmImage = m_spmimage_value;
+		console.log("m_spmImage.xpixels " + m_spmImage.xpixels);
+		m_spmImage.filename=filename_current;
+		updateSPMImageDisplay();
+		resetCamera();
+	
+	}
+	);
+
+	//m_spmImage= SPMImage.getSPMImageFromBitmapFile(base64EncString);
+	
+}
+
+
+var planegeommesh;
+function updateSPMImageDisplay(){
+	//Check m_spmImage.image is not null
+	if (m_spmImage!= null){
+		//if (m_spmImage.imageBMP != null){
+			if (m_spmImage.imageAsCanvas != null){
+			//Use bitmap image created to put in the viewport as a texture
+			//The best way to achieve this is by creating a intermediate canvas
+			
+			// var newCanvas = document.createElement('canvas');
+			// newCanvas.width = m_spmImage.xpixels;
+			// newCanvas.height = m_spmImage.ypixels;
+			// newCanvas.getContext("2d").putImageData(m_spmImage.imageBMP, 0, 0);
+
+			// var ctex= new THREE.CanvasTexture(newCanvas);
+
+			let ctex = new THREE.CanvasTexture(m_spmImage.imageAsCanvas);
+
+			var material = new THREE.MeshBasicMaterial({ map: ctex , side:THREE.DoubleSide});
+
+			//WORLD UNITS IS ANGSTRONS
+			//Need o put the texture onto a surface
+			//var geometry = new THREE.PlaneGeometry( 50, 50);
+			var planegeometry = new THREE.PlaneGeometry( m_spmImage.xsize_nm * SPMCorrection.xscale *10,
+				m_spmImage.ysize_nm * SPMCorrection.yscale*10 );
+			//TODO: Skew spmimage
+			//planegeometry.vertices if an array with 4 elements, with vector3 elements
+			let xcorr_rel= Math.tan( SPMCorrection.skew_deg * Math.PI / 180);			
+			planegeometry.vertices.forEach(function(v){v.x -= xcorr_rel*v.y } ); //test
+
+			//planegeometry.vertices
+			//Delete previous planegeommesh, if any
+			SPMImageSurfaceGroupObject.remove(planegeommesh);
+			planegeommesh = new THREE.Mesh( planegeometry, material );
+			planegeommesh.translateZ(-500);
+
+			//Clears SPMImageSurfaceGroupObject (all children, there should be only one anyway)
+			for (let i= SPMImageSurfaceGroupObject.children.length-1; i>=0 ; i--){
+				SPMImageSurfaceGroupObject.remove(SPMImageSurfaceGroupObject.children[i]);
+			}
+
+			SPMImageSurfaceGroupObject.add( planegeommesh );
+
+			render();
+
+			updateSPM_HTMLInfo();
+		}
+	}
+}
+function updateSPM_HTMLInfo(){
+	document.getElementById("tableinfo_SPM_filename").innerHTML= m_spmImage.filename
+	document.getElementById("tableinfo_SPM_name").innerHTML= m_spmImage.name
+
+	document.getElementById("tableinfo_SPM_xsize").value= m_spmImage.xsize_nm;
+	document.getElementById("tableinfo_SPM_ysize").value= m_spmImage.ysize_nm;
+
+	document.getElementById("tableinfo_SPM_xpixels").innerHTML= m_spmImage.xpixels;
+	document.getElementById("tableinfo_SPM_ypixels").innerHTML= m_spmImage.ypixels;
+
+	if (m_spmImage.isBitmap){
+		//Allow change in image size
+		document.getElementById("tableinfo_SPM_xsize").disabled = false;
+		document.getElementById("tableinfo_SPM_ysize").disabled = false;
+	}else{
+		document.getElementById("tableinfo_SPM_xsize").disabled = true;
+		document.getElementById("tableinfo_SPM_ysize").disabled = true;
+	}
+
+}
+
+function canvasthreejs_onwheel(event){
+	event.preventDefault();
+        
+	//Zoom in and out
+
+	//Get relative position
+	//
+	//Check location of the the mouse pointer
+	//var wheelrol=event.deltaY
+	var zoomfrac=Math.pow(2,event.deltaY/350); //Each mousewheel down roll throws value -350, 
+
+	var fracxy = canvasthreejs_helper_getXYFracPosFromXYMouseOffset( event.offsetX, event.offsetY);
+
+	let oldCamWidth= threejsCamera.right - threejsCamera.left;
+	let oldCamHeight = threejsCamera.top - threejsCamera.bottom;
+	
+	//Set new camera position based on these values
+	let newLeft = fracxy.xfrac * oldCamWidth *
+			(1 - zoomfrac ) + threejsCamera.left ;
+	let newBottom = fracxy.yfrac * oldCamHeight *
+			(1 - zoomfrac) + threejsCamera.bottom ; 
+	
+	let newRight = newLeft + oldCamWidth * zoomfrac ;
+	let newTop = newBottom + oldCamHeight * zoomfrac;
+	
+	threejsCamera.left= newLeft;
+	threejsCamera.right= newRight;
+	threejsCamera.top= newTop;
+	threejsCamera.bottom= newBottom;	
+	threejsCamera.updateProjectionMatrix();
+	
+	render();
+
+};
+
+function canvasthreejs_helper_getXYFracPosFromXYMouseOffset(xoffset,yoffset){
+
+return {xfrac: xoffset/canvasthreejs.scrollWidth,
+		yfrac: 1-yoffset/canvasthreejs.scrollHeight
+			};
+
+};
+
+function canvasthreejs_helper_getXYPosFromXYMouseOffset(xoffset,yoffset){
+    
+	let camWidth = threejsCamera.right - threejsCamera.left;
+    let camHeight = threejsCamera.top - threejsCamera.bottom;
+
+    return {xpos: threejsCamera.left + xoffset/canvasthreejs.scrollWidth * camWidth,
+            ypos: threejsCamera.bottom + (1-yoffset/canvasthreejs.scrollHeight) * camHeight
+            };
+    
+};
+function canvasthreejs_helper_getWCXYFromScreenXY(x_sc, y_sc){
+    
+	let camWidth = threejsCamera.right - threejsCamera.left;
+    let camHeight = threejsCamera.top - threejsCamera.bottom;
+
+    return {x: x_sc/canvasthreejs.scrollWidth * camWidth,
+            y: -y_sc/canvasthreejs.scrollHeight * camHeight
+            };
+    
+};
+
+var canvasthreejs_onclick_ignore=false;
+
+function canvasthreejs_onclick(event){
+	//TODO: there is a bit of a problem, when mvoing more than one molecule, the other molecules are deselected
+	//This is because onclick is fired after the mouseup event.
+	event.preventDefault();
+	
+	console.debug("canvasthreejs_onclick");
+
+	var mousex = event.offsetX ;
+	var mousey = event.offsetY ;
+	
+	if (event.button==0 && !canvasthreejs_onclick_ignore){
+		
+		let posfrac = canvasthreejs_helper_getXYFracPosFromXYMouseOffset(mousex, mousey);
+		
+		let v2d = new THREE.Vector2();
+		v2d.x= posfrac.xfrac*2-1;
+		v2d.y = posfrac.yfrac*2-1;
+		
+		threejsRaycaster.setFromCamera( v2d, threejsCamera ); //The coordinates of the vector should be normalised, between -1 and 1
+		
+		
+		//var intersectsMol = threejsRaycaster.intersectObjects( MoleculesGroup.children , true);
+		//Not working well, it generates many results that are the meshes. What I want is the molecule itself (MolRoot)
+		
+		/*
+		var intersectsScene = threejsRaycaster.intersectObjects( threejsScene.children ); //NOT WORKING
+		var intersectsSPM = threejsRaycaster.intersectObjects( SPMImageSurfaceGroupObject.children ); //NOT WORKING
+		
+		var intersects= intersectsMol;
+		//Note that most code found in ThreeJS examples checks for the 'scene' objects. Here I am being selective
+		//and only checking MoleculesGroup because I do not want to check/select SPM image
+		
+		console.log("raycast, number of intercepts " + intersects.length);
+		
+		if ( intersects.length > 0 ) {
+			let intersected  = intersects[0].object ; //Get the object
+			
+			//It is assumed that this object is of type MolRoot (group) as defined above.
+			//Perhaps I can add a sphere around it
+			//The problem is that I don't know what radius to use
+			
+			//Maybe try a solution that a sphere is drawn when the molecule is drawn
+			//And then just make it visible when molecule is selected by changing its material color
+
+			setMoleculeSelectionStatus(intersected);
+			
+		}
+		*/
+		
+		//selectedMolecule=null;
+		//Perhaps best is to check all
+		//Raytrace each of the Molecules in a for loop
+		let b_foundmolecule=false;
+		for (i=0; i< MoleculesGroup.children.length ; i++){
+			var mol=MoleculesGroup.children[i];
+			var intersects = threejsRaycaster.intersectObjects(mol.children , true);
+			if (intersects.length >0 && !b_foundmolecule){
+				//Set the molecule as selected
+				setMoleculeSelectionStatus(mol,true);
+				b_foundmolecule=true; //First molecule found under mouse, no need to continue looking
+			}else{
+				if ( !event.shiftKey ){
+					//deselects the molecule if shift key was not pressed
+					setMoleculeSelectionStatus(mol,false);
+				}
+			}	
+		}
+		//Working
+	
+		updateMolecules_HTMLInfo();
+	}
+
+};
+
+//molObject is a THREE.Group object with the molecule + selection mesh in it
+//Select/deselct molecule
+function setMoleculeSelectionStatus(molObject, bselect){
+	
+	//With this selection, change the transparency of the sphere to highlight selection
+	//bselect is to select
+
+	//Assumes it is a THREE.Group molecule type
+	
+	//Last model is the sphere
+	let l0 = molObject.children.length;
+	let selSphere= molObject.children[l0-1];
+	if (bselect==true){
+		selSphere.visible=true;
+		selSphere.material.opacity=0.5;
+		//selectedMolecules.push(molObject);
+		//selectedMolecule=molObject;
+	}else{
+		selSphere.material.opacity=0.0;
+		selSphere.visible=false;
+	}
+	
+	render();
+}
+
+function getSelectedMoleculesArray(){
+	let selMols = [];
+	for (i=0; i< MoleculesGroup.children.length ; i++){
+		let mol = MoleculesGroup.children[i];
+		//last 3D model is the 'selected' sphere
+		let l0 = mol.children.length;
+		let selSphere= mol.children[l0-1];
+
+		if (selSphere.visible==true){
+			selMols.push(mol);
+		}
+	}
+	return selMols;
+}
+
+function clearSelectionMolecules(){
+	for (i=0; i< MoleculesGroup.children.length ; i++){
+		let mol = MoleculesGroup.children[i];
+		//last 3D model is the 'selected' sphere
+		let l0 = mol.children.length;
+		let selSphere= mol.children[l0-1];
+
+		selSphere.visible= false ; //Sets 'selected' sphere as invisible
+	}
+
+}
+
+function canvasthreejs_onmousedown(event){
+	console.debug("canvasthreejs_onmousedown");
+	event.preventDefault();
+    var xmousepos= event.offsetX;
+    var ymousepos= event.offsetY;
+	
+	canvasthreejs_onclick_ignore=false;
+
+	if (event.button==0){
+        //left mouse button
+
+        canvasthreejs_mouse.isLeftButtonDown=true;
+        canvasthreejs_mouse.x0=xmousepos;
+        canvasthreejs_mouse.y0=ymousepos;
+	}
+	if (event.button==2){
+        //right mouse button
+
+        canvasthreejs_mouse.isRightButtonDown=true;
+        canvasthreejs_mouse.x0=xmousepos;
+        canvasthreejs_mouse.y0=ymousepos;
+	}
+
+	if (event.button==1){
+        //right mouse button
+
+        canvasthreejs_mouse.isMiddleButtonDown=true;
+        canvasthreejs_mouse.x0=xmousepos;
+        canvasthreejs_mouse.y0=ymousepos;
+	}
+
+}
+
+
+function canvasthreejs_onmouseup(event){
+	console.debug("canvasthreejs_onmouseup");
+	event.preventDefault();
+	if (event.button==0){
+		canvasthreejs_mouse.isLeftButtonDown=false;
+	}
+	if (event.button==2){
+		//There seems to be a bug in Opera, it does not register rightbutton mouseup events after dragging.
+		//I don't know what workaround I can do.
+		//It was determined that the 'bug' in Opera occurs when the mouse gestures are enabled
+
+		canvasthreejs_mouse.isRightButtonDown=false;
+	}
+
+	if (event.button==1){
+		canvasthreejs_mouse.isMiddleButtonDown=false;
+	}
+
+}
+
+function canvasthreejs_onmouseleave(event){
+	console.debug("canvasthreejs_onmouseleave")
+	event.preventDefault();
+	canvasthreejs_mouse.isLeftButtonDown=false;
+	canvasthreejs_mouse.isRightButtonDown=false;
+	canvasthreejs_mouse.isMiddleButtonDown=false;
+}
+
+
+function canvasthreejs_onmousemove(event){
+	console.debug("canvasthreejs_onmousemove, event.button=" + event.button.toString() );
+	event.preventDefault();
+	
+	let xmousepos= event.offsetX;
+	let ymousepos= event.offsetY;
+
+	if (canvasthreejs_mouse.isLeftButtonDown || canvasthreejs_mouse.isRightButtonDown || canvasthreejs_mouse.isMiddleButtonDown) {
+
+
+		let deltax= xmousepos - canvasthreejs_mouse.x0;
+		let deltay= ymousepos - canvasthreejs_mouse.y0;
+		
+		canvasthreejs_mouse.x0=xmousepos;//resets after calculating delta
+		canvasthreejs_mouse.y0=ymousepos;
+
+
+		//Calculate rotations and translations here before applying them to a bunch of molecules
+		//Convert deltax,deltay to world coordinates
+		let translVect_WC = canvasthreejs_helper_getWCXYFromScreenXY(deltax,deltay);
+
+		//Convert deltax deltay to fractional world coordinates
+		let frac_mov = canvasthreejs_helper_getXYFracPosFromXYMouseOffset(deltax,deltay);
+		//This helper function converts offset values to coordinates, it was not designed for deltas
+		//so a correction need to be applied to yfrac
+		frac_mov.yfrac -= 1.0;
+		
+		let frac_mov_dist = Math.sqrt( frac_mov.xfrac*frac_mov.xfrac + frac_mov.yfrac*frac_mov.yfrac );
+
+		let quatrotxy = new THREE.Quaternion();
+		//Axis of rotation is perpendicular from mouse movement,
+		//Rotation is proportional to length of movement
+		let rotvectorxy = new THREE.Vector3(-frac_mov.yfrac, frac_mov.xfrac, 0).normalize();
+		//need to normalize here otherwise it will not work well
+		quatrotxy.setFromAxisAngle( rotvectorxy , frac_mov_dist * Math.PI )
+		
+		let quatrotz=new THREE.Quaternion();
+		quatrotz.setFromAxisAngle( new THREE.Vector3(0, 0, 1) , frac_mov.xfrac*Math.PI );
+
+
+		let selMols = getSelectedMoleculesArray(); //Gets list of selected molecule objects
+
+		canvasthreejs_onclick_ignore=true; //only ignore click if there was a movement
+
+		//Applies manipulation operation to each of the selected molecules
+		for (let i=0 ; i < selMols.length ; i++){
+			let selectedMolecule= selMols[i];
+		//if (selectedMolecule != null){
+
+			if (canvasthreejs_mouse.isLeftButtonDown){
+				//Move (translate) selected molecule, if any is selected.
+	
+				//Translate selected molecule
+				//Translating in this way will not work well because the model is rotated after.
+				//selectedMolecule.translateX(translVect_WC.x);
+				//selectedMolecule.translateY(translVect_WC.y);
+			
+				selectedMolecule.position.x += translVect_WC.x;
+				selectedMolecule.position.y += translVect_WC.y;
+
+			}
+
+			if (canvasthreejs_mouse.isRightButtonDown){
+				//Rotate molecule around z-axis
+
+				//Convert deltax deltay to fractional world coordinates
+				//let frac_mov = canvasthreejs_helper_getXYFracPosFromXYMouseOffset(deltax,deltay);
+
+				if (frac_mov.xfrac!=0){
+					//let quatrot = new THREE.Quaternion();
+					//Axis of rotation is zz axis
+					//quatrot.setFromAxisAngle( new THREE.Vector3(0, 0, 1) , frac_mov.xfrac*Math.PI );
+					//quatrot.normalize();
+					selectedMolecule.quaternion.premultiply(quatrotz); //Rotate
+				}
+			}
+
+			if (canvasthreejs_mouse.isMiddleButtonDown){
+				//Convert deltax deltay to fractional world coordinates
+				//let frac_mov = canvasthreejs_helper_getXYFracPosFromXYMouseOffset(deltax,deltay);
+				if (frac_mov_dist>0){
+
+					//Rotate selected molecule
+					selectedMolecule.quaternion.premultiply(quatrotxy);
+				}
+			}
+
+			render();	
+		}
+
+	}
+
+	//update html info about the mouse location
+	let locVect_WC = canvasthreejs_helper_getXYPosFromXYMouseOffset(xmousepos,ymousepos);
+	document.getElementById("workspaceMouseLocationText").innerHTML = 
+		"( " + (locVect_WC.xpos/10).toFixed(2) + " , " + (locVect_WC.ypos/10).toFixed(2) + " )";
+
+}
+
+function workspaceSize_onchange(event){
+	//updates viewport to new size selected
+
+	let workspaceSizeSelect = document.getElementById("workspaceSizeSelect");
+
+	let v0= parseInt(workspaceSizeSelect.value);
+	let cv = document.getElementById("canvasthreejs");
+
+	switch (v0){
+		case 512:
+			cv.width=512;
+			cv.height=512;
+			render();
+			break;
+		case 800:
+			cv.width=800;
+			cv.height=800;
+			render();
+			break;
+		case 1024:
+			cv.width=1024;
+			cv.height=1024;
+			render();
+			break;
+	}
+	//Need, otherwise the viewport is not  update fully after resize, only one section works
+	threejsRenderer = new THREE.WebGLRenderer({ canvas: canvasthreejs });
+	render();
+}
+
+function selMoleculesDelete_onlclick(event){
+	//Delete selected molecule(s)
+	//Code very similar to function getSelectedMoleculesArray()
+	for (i=0; i< MoleculesGroup.children.length ; i++){
+		let mol = MoleculesGroup.children[i];
+		//last 3D model is the 'selected' sphere
+		let l0 = mol.children.length;
+		let selSphere= mol.children[l0-1];
+
+		if (selSphere.visible==true){
+			MoleculesGroup.children.splice(i,1); //delete element here
+			//also deletes entry in associative array
+
+			Map_LPMol_MolObj.delete(mol);
+
+			i--; //since there is one element less, we need to adjust index.
+		}	
+	}
+	updateMolecules_HTMLInfo();
+	render();
+
+}
+
+function selMoleculesDuplicate_onlclick(event){
+	//Duplicate selected molecule(s)
+	let selMols0= getSelectedMoleculesArray();
+
+	selMols0.forEach(function(mol){
+		//Get selected molecule's LPMolecule object
+		let lpmol0 = Map_LPMol_MolObj.get(mol);
+
+		//Deep copy lpmol0
+		//let lpmol1 = JSON.parse(JSON.stringify(lpmol0)); //does not work well. It does not clone functions
+		let lpmol1 = lpmol0.deepClone();
+
+		//Add molecule to the workspace
+		let molroot0 = workspaceAddNewMolecule(lpmol1 , false);
+
+		let molsize= 2*lpmol1.getMoleculeBoundingSphereRadius();
+
+		//translate on x-axis by its size
+		molroot0.position.x = mol.position.x + molsize;
+		molroot0.position.y = mol.position.y;
+		molroot0.quaternion.copy(mol.quaternion); //copy rotation status
+	})
+
+	updateMolecules_HTMLInfo();
+	render();
+
+}
+
+function selMoleculesMirror_onlclick(event){
+	//Creates a duplicate, mirror it and destroys original
+
+	//get selected molecule(s)
+	let selMols0= getSelectedMoleculesArray();
+
+	selMols0.forEach(function(mol){
+		//Get selected molecule's LPMolecule object
+		let lpmol0 = Map_LPMol_MolObj.get(mol);
+
+		//Deep copy lpmol0
+		//let lpmol1 = JSON.parse(JSON.stringify(lpmol0)); //does not work well. It does not clone functions
+		let lpmol1 = lpmol0.deepClone();
+
+		lpmol1.mirrorYZ();
+
+		//Add molecule to the workspace
+		let molroot0 = workspaceAddNewMolecule(lpmol1 , false);
+
+		let molsize= 2*lpmol1.getMoleculeBoundingSphereRadius();
+
+		//translate on x-axis by its size
+		molroot0.position.x = mol.position.x;
+		molroot0.position.y = mol.position.y;
+		molroot0.quaternion.copy(mol.quaternion); //copy rotation status
+
+		//delete molecule
+		let i0= MoleculesGroup.children.indexOf(mol);
+		MoleculesGroup.children.splice(i0,1);
+
+	})
+
+	updateMolecules_HTMLInfo();
+	render();
+}
+
+function spmImage_xscale_onkeypress(event){
+	//if enter key is pressed
+	if (event.keyCode==13){
+		//Apply newscale
+		SPMCorrection.xscale = document.getElementById("spmImage_xscale").value;
+		updateSPMImageDisplay();
+	}
+}
+
+function spmImage_yscale_onkeypress(event){
+	//if enter key is pressed
+	if (event.keyCode==13){
+		//Apply newscale
+		SPMCorrection.yscale = document.getElementById("spmImage_yscale").value;
+		updateSPMImageDisplay();
+	}
+}
+
+function spmImage_skew_onkeypress(event){
+	if (event.keyCode==13){
+		//Apply newscale
+		SPMCorrection.skew_deg = document.getElementById("spmImage_skewdeg").value;
+		updateSPMImageDisplay();
+	}
+}
+function resetCamera(){
+	//Fix camera to fit SPM image
+	let aspectratio=canvasthreejs.scrollWidth / canvasthreejs.scrollHeight;
+	//Assumes that the camera is already defined as being ortographic.
+
+	let w2=20; //default camera width if there is no SPM image
+
+	if (m_spmImage != null){
+		//WORLD UNITS IS ANGSTRONS
+		w2= m_spmImage.xsize_nm*10 /2;
+
+	}
+
+	//Sets new values
+	threejsCamera.left= -w2;
+	threejsCamera.right= w2;
+	threejsCamera.top=w2/aspectratio;
+	threejsCamera.bottom=-w2/aspectratio;
+
+	threejsCamera.updateProjectionMatrix();
+	render();
+}
+
+function tableinfo_SPM_xsize_onkeypress(event){
+	//if enter key is pressed
+	if (event.keyCode==13){
+		m_spmImage.xsize_nm = document.getElementById("tableinfo_SPM_xsize").value;
+		updateSPMImageDisplay();
+	}
+}
+
+function tableinfo_SPM_ysize_onkeypress(event){
+		//if enter key is pressed
+	if (event.keyCode==13){
+		m_spmImage.ysize_nm = document.getElementById("tableinfo_SPM_ysize").value;
+		updateSPMImageDisplay();
+	}
+}
+
+function btnBrowseFile(event){
+	//Needs testing
+	var inpFile = document.createElement("input");
+	inpFile.type = "file";
+	
+	//onchange will trigger when  user selects file(s)
+	inpFile.onchange = function(e){
+		var file = e.target.files[0];
+		openDropFile(file);
+	}
+	inpFile.click(); //triggers to open file
+	   
+}
+
+	</script>
+</body>
+
+</html>

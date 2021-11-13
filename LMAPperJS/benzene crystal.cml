@@ -1,0 +1,38 @@
+<molecule>
+ <crystal>
+  <scalar title="a" units="units:angstrom">20.000000</scalar>
+  <scalar title="b" units="units:angstrom">10.000000</scalar>
+  <scalar title="c" units="units:angstrom">10.000000</scalar>
+  <scalar title="alpha" units="units:degree">90.000000</scalar>
+  <scalar title="beta" units="units:degree">90.000000</scalar>
+  <scalar title="gamma" units="units:degree">90.000000</scalar>
+ </crystal>
+ <atomArray>
+  <atom id="a1" elementType="C" xFract="0.637668" yFract="0.590097" zFract="0.357062"/>
+  <atom id="a2" elementType="C" xFract="0.606915" yFract="0.659701" zFract="0.461100"/>
+  <atom id="a3" elementType="C" xFract="0.538297" yFract="0.684333" zFract="0.456999"/>
+  <atom id="a4" elementType="C" xFract="0.500472" yFract="0.639662" zFract="0.348653"/>
+  <atom id="a5" elementType="C" xFract="0.531216" yFract="0.569965" zFract="0.244665"/>
+  <atom id="a6" elementType="C" xFract="0.599803" yFract="0.545016" zFract="0.248942"/>
+  <atom id="a7" elementType="H" xFract="0.691133" yFract="0.570955" zFract="0.360234"/>
+  <atom id="a8" elementType="H" xFract="0.447041" yFract="0.659152" zFract="0.345289"/>
+  <atom id="a9" elementType="H" xFract="0.501737" yFract="0.535078" zFract="0.160299"/>
+  <atom id="a10" elementType="H" xFract="0.623735" yFract="0.490501" zFract="0.168041"/>
+  <atom id="a11" elementType="H" xFract="0.514315" yFract="0.738344" zFract="0.538178"/>
+  <atom id="a12" elementType="H" xFract="0.636409" yFract="0.694744" zFract="0.545380"/>
+ </atomArray>
+ <bondArray>
+  <bond atomRefs2="a1 a2" order="2"/>
+  <bond atomRefs2="a3 a4" order="2"/>
+  <bond atomRefs2="a4 a5" order="1"/>
+  <bond atomRefs2="a5 a6" order="2"/>
+  <bond atomRefs2="a6 a1" order="1"/>
+  <bond atomRefs2="a1 a7" order="1"/>
+  <bond atomRefs2="a4 a8" order="1"/>
+  <bond atomRefs2="a5 a9" order="1"/>
+  <bond atomRefs2="a6 a10" order="1"/>
+  <bond atomRefs2="a3 a2" order="1"/>
+  <bond atomRefs2="a3 a11" order="1"/>
+  <bond atomRefs2="a2 a12" order="1"/>
+ </bondArray>
+</molecule>
