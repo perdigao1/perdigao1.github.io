@@ -925,7 +925,7 @@ function canvasthreejs_onmousedown(event){
 	}
 
 	if (event.button==1){
-        //right mouse button
+        //middle mouse button
 
         canvasthreejs_mouse.isMiddleButtonDown=true;
         canvasthreejs_mouse.x0=xmousepos;
@@ -1013,7 +1013,7 @@ function canvasthreejs_onmousemove(event){
 			let selectedMolecule= selMols[i];
 		//if (selectedMolecule != null){
 
-			if (canvasthreejs_mouse.isLeftButtonDown){
+			if (canvasthreejs_mouse.isLeftButtonDown && !event.shiftKey){
 				//Move (translate) selected molecule, if any is selected.
 	
 				//Translate selected molecule
@@ -1041,7 +1041,8 @@ function canvasthreejs_onmousemove(event){
 				}
 			}
 
-			if (canvasthreejs_mouse.isMiddleButtonDown){
+			if (canvasthreejs_mouse.isMiddleButtonDown || 
+			(event.shiftKey && canvasthreejs_mouse.isLeftButtonDown)){ //Shift + left button simulates middle
 				//Convert deltax deltay to fractional world coordinates
 				//let frac_mov = canvasthreejs_helper_getXYFracPosFromXYMouseOffset(deltax,deltay);
 				if (frac_mov_dist>0){
