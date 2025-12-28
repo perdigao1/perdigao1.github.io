@@ -182,7 +182,7 @@ class SPMImage{
 
           var deltamaxmin = this.imagedata_max - this.imagedata_min;
           if (deltamaxmin == 0) {
-            console.log("Error, deltamaxmin = 0, cannot create a suitable grayscale image")
+            console.error("deltamaxmin = 0, cannot create a suitable grayscale image")
           } else {
             for (let iy = 0; iy < this.ypixels; iy++) {
               for (let ix = 0; ix < this.xpixels; ix++) {
@@ -359,7 +359,7 @@ class SPMImage{
 				console.log("m_spmimage flattened");
 		
 			}else{
-				console.log("Error with parameters read in header. Setting m_spmimage.imagedata=null");
+				console.error("Error with parameters read in header. Setting m_spmimage.imagedata=null");
 				m_spmimage=null;
 			}
 
@@ -488,15 +488,116 @@ class SPMImage{
 				m_spmimage.flatten();
 
 			}else{
-				console.log("Error with parameters read in header.");
+				console.error("Error with parameters read in header.");
 			}
 
 
 		}else{
-			console.log("Error: Header too small");
+			console.error("Error: Header too small");
 		}
 
 		return m_spmimage;
+
+	}
+
+	/**
+	 * @param {ArrayBuffer} arrbuff0
+	 */
+	static getSPMImageFromArrBuffInftRegridBinFile( arrbuff0 ){
+		// TODO
+
+		// File has a XM header from position 4 to 50000
+		// Need to parse that to get the parameters
+
+		//Image data is from index 50000
+		
+		var m_spmimage=new SPMImage();
+
+		const header= arrbuff0.slice(4, 50000);
+		const data = arrbuff0.slice(50000);
+
+		// Read header as text then DOM
+		const u8=new Uint8Array(header);
+		let header_str= String.fromCharCode.apply( null, u8 );
+
+		let parser = new DOMParser();
+		const doc_DOM = parser.parseFromString(header_str, "text/xml");
+
+		// Get all elements with tag name "mytag"
+		const name_elements = doc_DOM.getElementsByTagName("Name");
+
+		for (let i = 0; i < elements.length; i++){
+			const currentElement = name_elements[i];
+			// Parse values as they appear
+			// Pixels , Lines, FastScanSize, SlowScanSize
+
+			if (currentElement.textContent== 'Pixels'){
+				//get value
+				value = currentElement.parent.getElementsByTagName('Value')[0]?.textContent;
+				i0 = parseInt(value);
+				if (i0 <0){
+					console.error("Pixels value not valid");
+				}
+				m_spmimage.xpixels= 2**i_pixels; // power of 2
+			}else if (currentElement.textContent== 'Lines'){
+				value = currentElement.parent.getElementsByTagName('Value')[0]?.textContent;
+				i0 = parseInt(value);
+				if (i0 <0){
+					console.error("Lines value not valid");
+				}
+				m_spmimage.ypixels= 2**i0; // power of 2
+				
+			}else if (currentElement.textContent== 'FastScanSize'){ // in micrometers
+				value = currentElement.parent.getElementsByTagName('Value')[0]?.textContent;
+				f_um = parseFloat(value);
+				f_nm = 1.0;
+				if (f_um!=0){
+					f_nm=1000.0 * f_um;
+				}
+				m_spmimage.xsize_nm= f_nm;
+
+			}else if (currentElement.textContent== 'SlowScanSize'){ // in micrometers
+				value = currentElement.parent.getElementsByTagName('Value')[0]?.textContent;
+				f_um = parseFloat(value);
+				f_nm = 1.0;
+				if (f_um!=0){
+					f_nm=1000.0 * f_um;
+				}
+				m_spmimage.ysize_nm= f_nm;
+			}
+		}
+
+		// Hopefully by here we know the pixel size an number of lines
+		if (m_spmimage.ypixels>0 && m_spmimage.ypixels<= 8192 &&
+			m_spmimage.xpixels>0 && m_spmimage.xpixels<= 8192){
+			//Check data after header has enough bytes
+			const exp_bytes_size = m_spmimage.ypixels*m_spmimage.xpixels*8; // 8 bytes per data point
+			if (data.length < exp_bytes_size){
+				console.error("Data part is too small, not enough bytes");
+				return null;
+			}
+			
+			const total_count = m_spmimage.ypixels*m_spmimage;
+			console.log("")
+			const imageDataFloat = [];
+			const dataView = new DataView(data);
+			
+			for (let count = 0; count < total_count; count++) {
+				const offset = 8 * count;
+				const value = dataView.getFloat64(offset, true);
+				imageDataFloat.push(value);
+			}
+			m_spmimage.spmImageZData= imageDataFloat;
+			
+			m_spmimage.flatten();
+			console.log("m_spmimage flattened");
+			
+			return m_spmimage;
+
+		}else{
+			console.error("Data size not valid")
+			return null;
+		}
 
 	}
 
@@ -579,7 +680,7 @@ class SPMImage{
 
 		m_spmimage= await pr0;
 		
-		console.log("pre  return m_spmimage");
+		console.log("pre return m_spmimage");
 		return m_spmimage;
 
 	}

@@ -304,6 +304,7 @@
 			switch (file_ext) {
 				case 'dat':
 					console.log('Assuming is a Createc DAT file');
+					console.error('Createc DAT files not supported yet');
 					//functionProcessFileHandler = processCreatecDATFile;
 					//NOT SUPPORTED
 					//TODO
@@ -336,6 +337,18 @@
 					console.log('Assuming is a bitmap file');
 					functionProcessFileHandlerBMP = processBMPFile1;
 					break;
+				case 'bin':
+					// Is it an Infinitesima regrid .bin file?
+					// Check if it has Regrid text at the end
+					dot_idx = filename.lastIndexOf('.')
+
+					if (filename.substring( dot_idx-'regrid'.length()-1 , dot_idx-1).toLowerCase() == 'regrid'){
+						console.log("Infinitesima Regrid_bin file")
+						functionProcessFileHandler = processInftRegridBinFile;
+						break
+					}
+
+
 				default:
 					console.log('Unknown extension');
 					functionProcessFileHandler = null;
@@ -578,6 +591,13 @@ function processChemicalMarkupCMLFile(arraybuffer0) {
 function processWSxM_STPFile(arraybuffer0) {
 	//opens the file (arraybuffer0) and then updates display
 	m_spmImage=SPMImage.getSPMImageFromArrBuffWSXMSTPFile(arraybuffer0);
+	m_spmImage.filename=filename_current;
+	updateSPMImageDisplay();
+	resetCamera();
+}
+
+function processInftRegridBinFile(arraybuffer0){
+	m_spmImage=SPMImage.getSPMImageFromArrBuffInftRegridBinFile(arraybuffer0);
 	m_spmImage.filename=filename_current;
 	updateSPMImageDisplay();
 	resetCamera();
