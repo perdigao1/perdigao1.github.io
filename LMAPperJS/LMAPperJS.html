@@ -139,7 +139,7 @@
 	<br>This is a version of LMAPper for browsers. It is under development and is just <b>experimental</b>. Use it at your own risk.
 	<br>
 	<br>Supported file formats:
-	<br>SPM files: Nanonis SXM, WSxM STP ,and bitmap files
+	<br>SPM files: Nanonis SXM, WSxM STP, bitmap files, and *new* Infinitesima Regrid.bin files
 	<br>Molecules: Protein Data Bank (PDB), Chemical Markup Language (CML)
 	<br>
 	<br>Use mouse left-click to select molecules. Drag to move them.
@@ -340,13 +340,13 @@
 				case 'bin':
 					// Is it an Infinitesima regrid .bin file?
 					// Check if it has Regrid text at the end
-					dot_idx = filename.lastIndexOf('.')
-
-					if (filename.substring( dot_idx-'regrid'.length()-1 , dot_idx-1).toLowerCase() == 'regrid'){
-						console.log("Infinitesima Regrid_bin file")
+					const dot_idx = filename.lastIndexOf('.');
+					const check_str = filename.substring( dot_idx-'regrid'.length , dot_idx).toLowerCase();
+					if (check_str == 'regrid'){
+						console.log("Infinitesima Regrid_bin file");
 						functionProcessFileHandler = processInftRegridBinFile;
-						break
 					}
+					break;
 
 
 				default:

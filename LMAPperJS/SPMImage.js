@@ -526,40 +526,41 @@ class SPMImage{
 		// Get all elements with tag name "mytag"
 		const name_elements = doc_DOM.getElementsByTagName("Name");
 
-		for (let i = 0; i < elements.length; i++){
+		for (let i = 0; i < name_elements.length; i++){
 			const currentElement = name_elements[i];
 			// Parse values as they appear
 			// Pixels , Lines, FastScanSize, SlowScanSize
 
 			if (currentElement.textContent== 'Pixels'){
 				//get value
-				value = currentElement.parent.getElementsByTagName('Value')[0]?.textContent;
-				i0 = parseInt(value);
+				const value = currentElement.parentElement.getElementsByTagName('Val')[0]?.textContent;
+				const i0 = parseInt(value);
 				if (i0 <0){
 					console.error("Pixels value not valid");
 				}
-				m_spmimage.xpixels= 2**i_pixels; // power of 2
+				m_spmimage.xpixels= 2**i0; // power of 2
 			}else if (currentElement.textContent== 'Lines'){
-				value = currentElement.parent.getElementsByTagName('Value')[0]?.textContent;
-				i0 = parseInt(value);
+				const value = currentElement.parentElement.getElementsByTagName('Val')[0]?.textContent;
+				const i0 = parseInt(value);
 				if (i0 <0){
 					console.error("Lines value not valid");
 				}
 				m_spmimage.ypixels= 2**i0; // power of 2
 				
 			}else if (currentElement.textContent== 'FastScanSize'){ // in micrometers
-				value = currentElement.parent.getElementsByTagName('Value')[0]?.textContent;
-				f_um = parseFloat(value);
-				f_nm = 1.0;
+				// const par_el =  currentElement.parentElement;
+				const value = currentElement.parentElement.getElementsByTagName('Val')[0]?.textContent;
+				const f_um = parseFloat(value);
+				let f_nm = 1.0;
 				if (f_um!=0){
 					f_nm=1000.0 * f_um;
 				}
 				m_spmimage.xsize_nm= f_nm;
 
 			}else if (currentElement.textContent== 'SlowScanSize'){ // in micrometers
-				value = currentElement.parent.getElementsByTagName('Value')[0]?.textContent;
-				f_um = parseFloat(value);
-				f_nm = 1.0;
+				const value = currentElement.parentElement.getElementsByTagName('Val')[0]?.textContent;
+				const f_um = parseFloat(value);
+				let f_nm = 1.0;
 				if (f_um!=0){
 					f_nm=1000.0 * f_um;
 				}
@@ -577,17 +578,28 @@ class SPMImage{
 				return null;
 			}
 			
-			const total_count = m_spmimage.ypixels*m_spmimage;
+			const total_count = m_spmimage.ypixels * m_spmimage.xpixels;
 			console.log("")
-			const imageDataFloat = [];
 			const dataView = new DataView(data);
 			
-			for (let count = 0; count < total_count; count++) {
-				const offset = 8 * count;
-				const value = dataView.getFloat64(offset, true);
-				imageDataFloat.push(value);
+			// for (let count = 0; count < total_count; count++) {
+			// 	const offset = 8 * count;
+			// 	const value = dataView.getFloat64(offset, true);
+			// 	imageDataFloat.push(value);
+			// }
+			
+			let image=new Array(m_spmimage.ypixels);
+			for (let iy = 0; iy < m_spmimage.ypixels; iy++) {
+				image[iy] = new Array(m_spmimage.xpixels);
+				for (let ix = 0; ix < m_spmimage.xpixels; ix++) {
+					const iloc = iy*m_spmimage.xpixels + ix;
+					const offset = 8 * iloc;
+
+					const value = dataView.getFloat64(offset, true);
+					image[iy][ix] = value;
+				}
 			}
-			m_spmimage.spmImageZData= imageDataFloat;
+			m_spmimage.spmImageZData= image;
 			
 			m_spmimage.flatten();
 			console.log("m_spmimage flattened");
